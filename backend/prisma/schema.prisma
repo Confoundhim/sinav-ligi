@@ -1,0 +1,627 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  STUDENT
+  ADMIN
+}
+
+enum ExamSessionType {
+  SHADOW
+  WEEKLY
+  CUSTOM
+  DUEL
+}
+
+enum WeeklyExamStatus {
+  DRAFT
+  PUBLISHED
+  ACTIVE
+  COMPLETED
+}
+
+enum DuelMatchStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum QuarantineStatus {
+  ACTIVE
+  RESCUED
+  EXPIRED
+}
+
+enum RankingPeriod {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum WalletTransactionType {
+  DEPOSIT
+  WITHDRAW
+  EXAM_FEE
+  SCHOLARSHIP
+  REFUND
+}
+
+enum PaymentType {
+  ENROLLMENT
+  WEEKLY_EXAM
+  DEPOSIT
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  BLOCKED
+}
+
+enum CheatLogType {
+  TAB_SWITCH
+  FULLSCREEN_EXIT
+  WINDOW_BLUR
+  DEVTOOLS_OPEN
+  MULTIPLE_LOGIN
+  OTHER
+}
+
+model User {
+  id                     String                 @id @default(cuid())
+  email                  String                 @unique
+  phone                  String?                @unique
+  passwordHash           String
+  displayName            String
+  avatar                 String?
+  city                   String?
+  school                 String?
+  role                   UserRole               @default(STUDENT)
+  isActive               Boolean                @default(true)
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
+  profile                UserProfile?
+  authSessions           AuthSession[]
+  enrollments            Enrollment[]
+  examSessions           ExamSession[]
+  weeklyExamParticipants WeeklyExamParticipant[]
+  createdWeeklyExams     WeeklyExam[]           @relation("WeeklyExamCreator")
+  challengedDuels        DuelMatch[]            @relation("DuelChallenger")
+  opponentDuels          DuelMatch[]            @relation("DuelOpponent")
+  wonDuels               DuelMatch[]            @relation("DuelWinner")
+  duelRights             DuelRight[]
+  quarantineItems        QuarantineItem[]
+  rankingSnapshots       RankingSnapshot[]
+  userBadges             UserBadge[]
+  prestigeAwards         PrestigeAward[]
+  certificates           Certificate[]
+  trophies               Trophy[]
+  wisdomTreeEntries      WisdomTree[]
+  wallet                 Wallet?
+  payments               Payment[]
+  notifications          Notification[]
+  requestedFriendships   Friendship[]           @relation("FriendshipRequester")
+  receivedFriendships    Friendship[]           @relation("FriendshipAddressee")
+  videoProgress          VideoProgress[]
+  cheatLogs              CheatLog[]
+  auditLogs              AuditLog[]
+
+  @@index([role, isActive])
+  @@index([createdAt])
+}
+
+model UserProfile {
+  userId         String   @id
+  targetExam     String
+  studyStartDate DateTime?
+  bio            String?  @db.Text
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AuthSession {
+  userId       String
+  deviceId     String
+  refreshToken String   @unique
+  expiresAt    DateTime
+  ip           String?
+  userAgent    String?
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, deviceId])
+  @@index([expiresAt])
+}
+
+model ExamType {
+  id              String          @id @default(cuid())
+  name            String          @unique
+  isActive        Boolean         @default(true)
+  registrationFee Decimal         @default(0) @db.Decimal(10, 2)
+  description     String?         @db.Text
+  subjects        Subject[]
+  enrollments     Enrollment[]
+  examSessions    ExamSession[]
+  weeklyExams     WeeklyExam[]
+  duelMatches     DuelMatch[]
+  rankingSnapshots RankingSnapshot[]
+
+  @@index([isActive])
+}
+
+model Subject {
+  id             String         @id @default(cuid())
+  examTypeId     String
+  name           String
+  teacherPersona String?
+  icon           String?
+  examType       ExamType       @relation(fields: [examTypeId], references: [id], onDelete: Cascade)
+  questionTypes  QuestionType[]
+  wisdomTree     WisdomTree[]
+
+  @@unique([examTypeId, name])
+  @@index([examTypeId])
+}
+
+model QuestionType {
+  id            String      @id @default(cuid())
+  subjectId     String
+  name          String
+  questionCount Int         @default(0)
+  sortOrder     Int
+  subject       Subject     @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  questions     Question[]
+  videos        Video[]
+  wisdomTree    WisdomTree[]
+
+  @@unique([subjectId, name])
+  @@unique([subjectId, sortOrder])
+  @@index([subjectId])
+}
+
+model Question {
+  id                 String                    @id @default(cuid())
+  questionTypeId     String
+  content            Json
+  correctAnswer      String
+  explanation        String?                   @db.Text
+  difficulty         Int                       @default(1)
+  isActive           Boolean                   @default(true)
+  usageCount         Int                       @default(0)
+  createdAt          DateTime                  @default(now())
+  questionType       QuestionType              @relation(fields: [questionTypeId], references: [id], onDelete: Cascade)
+  similaritySource   QuestionSimilarityIndex[] @relation("QuestionSimilaritySource")
+  similarityTarget   QuestionSimilarityIndex[] @relation("QuestionSimilarityTarget")
+  sessionQuestions   ExamSessionQuestion[]
+  weeklyExamQuestions WeeklyExamQuestion[]
+  duelRounds         DuelRound[]
+  quarantineItems    QuarantineItem[]
+  rescueAttempts     QuarantineAttempt[]
+
+  @@index([questionTypeId, isActive])
+  @@index([usageCount])
+  @@index([createdAt])
+}
+
+model QuestionSimilarityIndex {
+  questionId        String
+  similarQuestionId String
+  score             Float
+  question          Question @relation("QuestionSimilaritySource", fields: [questionId], references: [id], onDelete: Cascade)
+  similarQuestion   Question @relation("QuestionSimilarityTarget", fields: [similarQuestionId], references: [id], onDelete: Cascade)
+
+  @@id([questionId, similarQuestionId])
+  @@index([similarQuestionId])
+  @@index([score])
+}
+
+model Enrollment {
+  userId      String
+  examTypeId  String
+  year        Int
+  paidAmount  Decimal   @default(0) @db.Decimal(10, 2)
+  paymentId   String?   @unique
+  enrolledAt  DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  examType    ExamType  @relation(fields: [examTypeId], references: [id], onDelete: Cascade)
+  payment     Payment?  @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+
+  @@id([userId, examTypeId, year])
+  @@index([examTypeId, year])
+  @@index([enrolledAt])
+}
+
+model ExamSession {
+  id              String                @id @default(cuid())
+  userId          String
+  type            ExamSessionType
+  examTypeId      String
+  startedAt       DateTime              @default(now())
+  finishedAt      DateTime?
+  totalQuestions  Int
+  correctCount    Int                   @default(0)
+  wrongCount      Int                   @default(0)
+  emptyCount      Int                   @default(0)
+  score           Decimal               @default(0) @db.Decimal(10, 2)
+  duration        Int                   @default(0)
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  examType        ExamType              @relation(fields: [examTypeId], references: [id], onDelete: Cascade)
+  questions       ExamSessionQuestion[]
+  quarantineItems QuarantineItem[]
+  certificates    Certificate[]
+  cheatLogs       CheatLog[]
+
+  @@index([userId, startedAt])
+  @@index([examTypeId, type])
+}
+
+model ExamSessionQuestion {
+  examSessionId String
+  questionId    String
+  order         Int
+  userAnswer    String?
+  isCorrect     Boolean?
+  answeredAt    DateTime?
+  timeSpent     Int        @default(0)
+  examSession   ExamSession @relation(fields: [examSessionId], references: [id], onDelete: Cascade)
+  question      Question    @relation(fields: [questionId], references: [id], onDelete: Restrict)
+
+  @@id([examSessionId, order])
+  @@unique([examSessionId, questionId])
+  @@index([questionId])
+  @@index([answeredAt])
+}
+
+model WeeklyExam {
+  id                String                  @id @default(cuid())
+  examTypeId        String
+  scheduledAt       DateTime
+  resultAnnouncedAt DateTime?
+  status            WeeklyExamStatus        @default(DRAFT)
+  minParticipants   Int                     @default(0)
+  entryFee          Decimal                 @default(0) @db.Decimal(10, 2)
+  createdBy         String
+  examType          ExamType                @relation(fields: [examTypeId], references: [id], onDelete: Cascade)
+  creator           User                    @relation("WeeklyExamCreator", fields: [createdBy], references: [id], onDelete: Restrict)
+  questions         WeeklyExamQuestion[]
+  participants      WeeklyExamParticipant[]
+
+  @@index([examTypeId, status, scheduledAt])
+  @@index([createdBy])
+}
+
+model WeeklyExamQuestion {
+  weeklyExamId String
+  questionId   String
+  order        Int
+  weeklyExam   WeeklyExam @relation(fields: [weeklyExamId], references: [id], onDelete: Cascade)
+  question     Question   @relation(fields: [questionId], references: [id], onDelete: Restrict)
+
+  @@id([weeklyExamId, order])
+  @@unique([weeklyExamId, questionId])
+  @@index([questionId])
+}
+
+model WeeklyExamParticipant {
+  weeklyExamId String
+  userId       String
+  paymentId    String?   @unique
+  startedAt    DateTime?
+  finishedAt   DateTime?
+  score        Decimal   @default(0) @db.Decimal(10, 2)
+  rank         Int?
+  weeklyExam   WeeklyExam @relation(fields: [weeklyExamId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payment      Payment?   @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+
+  @@id([weeklyExamId, userId])
+  @@index([userId])
+  @@index([rank])
+}
+
+model DuelMatch {
+  id           String           @id @default(cuid())
+  challengerId String
+  opponentId   String
+  examTypeId   String
+  status       DuelMatchStatus  @default(PENDING)
+  betPoints    Int              @default(0)
+  winnerId     String?
+  createdAt    DateTime         @default(now())
+  challenger   User             @relation("DuelChallenger", fields: [challengerId], references: [id], onDelete: Cascade)
+  opponent     User             @relation("DuelOpponent", fields: [opponentId], references: [id], onDelete: Cascade)
+  winner       User?            @relation("DuelWinner", fields: [winnerId], references: [id], onDelete: SetNull)
+  examType     ExamType         @relation(fields: [examTypeId], references: [id], onDelete: Cascade)
+  rounds       DuelRound[]
+
+  @@index([challengerId, status])
+  @@index([opponentId, status])
+  @@index([examTypeId])
+  @@index([createdAt])
+}
+
+model DuelRound {
+  duelMatchId       String
+  questionId        String
+  challengerAnswer  String?
+  opponentAnswer    String?
+  challengerTime    Int         @default(0)
+  opponentTime      Int         @default(0)
+  duelMatch         DuelMatch   @relation(fields: [duelMatchId], references: [id], onDelete: Cascade)
+  question          Question    @relation(fields: [questionId], references: [id], onDelete: Restrict)
+
+  @@id([duelMatchId, questionId])
+  @@index([questionId])
+}
+
+model DuelRight {
+  userId String
+  date   DateTime @db.Date
+  used   Int      @default(0)
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, date])
+  @@index([date])
+}
+
+model QuarantineItem {
+  id             String             @id @default(cuid())
+  userId         String
+  questionId     String
+  examSessionId  String
+  quarantinedAt  DateTime           @default(now())
+  status         QuarantineStatus   @default(ACTIVE)
+  rescuedAt      DateTime?
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question       Question           @relation(fields: [questionId], references: [id], onDelete: Restrict)
+  examSession    ExamSession        @relation(fields: [examSessionId], references: [id], onDelete: Cascade)
+  attempts       QuarantineAttempt[]
+
+  @@index([userId, status])
+  @@index([questionId])
+  @@index([examSessionId])
+}
+
+model QuarantineAttempt {
+  quarantineItemId  String
+  attemptQuestionId String
+  isCorrect         Boolean
+  attemptedAt       DateTime        @default(now())
+  quarantineItem    QuarantineItem  @relation(fields: [quarantineItemId], references: [id], onDelete: Cascade)
+  attemptQuestion   Question        @relation(fields: [attemptQuestionId], references: [id], onDelete: Restrict)
+
+  @@id([quarantineItemId, attemptQuestionId])
+  @@index([attemptedAt])
+}
+
+model RankingSnapshot {
+  id           String        @id @default(cuid())
+  userId       String
+  examTypeId   String
+  period       RankingPeriod
+  score        Decimal       @default(0) @db.Decimal(10, 2)
+  rank         Int
+  snapshotDate DateTime      @db.Date
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  examType     ExamType      @relation(fields: [examTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, examTypeId, period, snapshotDate])
+  @@index([examTypeId, period, snapshotDate, rank])
+}
+
+model Badge {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  description String?     @db.Text
+  icon        String?
+  category    String
+  criteria    Json
+  users       UserBadge[]
+
+  @@index([category])
+}
+
+model UserBadge {
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge    Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, badgeId])
+  @@index([earnedAt])
+}
+
+model PrestigeAward {
+  id        String   @id @default(cuid())
+  userId    String
+  category  String
+  period    String
+  awardedAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, awardedAt])
+  @@index([category, period])
+}
+
+model Certificate {
+  id            String      @id @default(cuid())
+  userId        String
+  title         String
+  description   String?     @db.Text
+  earnedAt      DateTime    @default(now())
+  examSessionId String?
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  examSession   ExamSession? @relation(fields: [examSessionId], references: [id], onDelete: SetNull)
+
+  @@index([userId, earnedAt])
+  @@index([examSessionId])
+}
+
+model Trophy {
+  id       String   @id @default(cuid())
+  userId   String
+  type     String
+  earnedAt DateTime @default(now())
+  stats    Json?
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, earnedAt])
+  @@index([type])
+}
+
+model WisdomTree {
+  userId         String
+  subjectId      String
+  questionTypeId String
+  completedAt    DateTime    @default(now())
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject        Subject     @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  questionType   QuestionType @relation(fields: [questionTypeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, subjectId, questionTypeId])
+  @@index([subjectId])
+  @@index([questionTypeId])
+}
+
+model Wallet {
+  id               String              @id @default(cuid())
+  userId           String              @unique
+  balance          Decimal             @default(0) @db.Decimal(12, 2)
+  totalEarned      Decimal             @default(0) @db.Decimal(12, 2)
+  totalSpent       Decimal             @default(0) @db.Decimal(12, 2)
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions     WalletTransaction[]
+}
+
+model WalletTransaction {
+  id          String                @id @default(cuid())
+  walletId    String
+  type        WalletTransactionType
+  amount      Decimal               @db.Decimal(12, 2)
+  description String?
+  referenceId String?
+  createdAt   DateTime              @default(now())
+  wallet      Wallet                @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId, createdAt])
+  @@index([type])
+  @@index([referenceId])
+}
+
+model Payment {
+  id                   String                  @id @default(cuid())
+  userId               String
+  amount               Decimal                 @db.Decimal(12, 2)
+  type                 PaymentType
+  status               PaymentStatus           @default(PENDING)
+  paytrOrderId         String?                 @unique
+  paytrToken           String?
+  metadata             Json?
+  createdAt            DateTime                @default(now())
+  user                 User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enrollments          Enrollment[]
+  weeklyParticipants   WeeklyExamParticipant[]
+
+  @@index([userId, type, status])
+  @@index([createdAt])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  body      String   @db.Text
+  data      Json?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+  @@index([type])
+}
+
+model Friendship {
+  id          String           @id @default(cuid())
+  requesterId String
+  addresseeId String
+  status      FriendshipStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  requester   User             @relation("FriendshipRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  addressee   User             @relation("FriendshipAddressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, addresseeId])
+  @@index([addresseeId, status])
+  @@index([requesterId, status])
+}
+
+model Video {
+  id           String         @id @default(cuid())
+  questionTypeId String
+  title        String
+  videoUrl     String
+  thumbnailUrl String?
+  duration     Int
+  sortOrder    Int
+  isActive     Boolean        @default(true)
+  questionType QuestionType   @relation(fields: [questionTypeId], references: [id], onDelete: Cascade)
+  progress     VideoProgress[]
+
+  @@unique([questionTypeId, sortOrder])
+  @@index([questionTypeId, isActive])
+}
+
+model VideoProgress {
+  userId          String
+  videoId         String
+  watchedSeconds  Int       @default(0)
+  completed       Boolean   @default(false)
+  lastWatchedAt   DateTime?
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video           Video     @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@id([userId, videoId])
+  @@index([completed])
+  @@index([lastWatchedAt])
+}
+
+model CheatLog {
+  id            String       @id @default(cuid())
+  userId        String
+  examSessionId String
+  type          CheatLogType
+  count         Int          @default(1)
+  timestamp     DateTime     @default(now())
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  examSession   ExamSession  @relation(fields: [examSessionId], references: [id], onDelete: Cascade)
+
+  @@index([userId, timestamp])
+  @@index([examSessionId, type])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  adminUserId String
+  action      String
+  entityType  String
+  entityId    String
+  details     Json?
+  createdAt   DateTime @default(now())
+  adminUser   User     @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+
+  @@index([adminUserId, createdAt])
+  @@index([entityType, entityId])
+}

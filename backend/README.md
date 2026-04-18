@@ -55,6 +55,12 @@ copy ..\\.env.example ..\\.env
 
 Uygulama `.env` olmadan da varsayılan değerlerle açılır. Veritabanı ve Redis kontrolü `/health` çağrısında raporlanır.
 
+Prisma için `DATABASE_URL` değişkenini tanımlayın. Lokal geliştirmede örnek değer:
+
+```bash
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/sinav_ligi?schema=public
+```
+
 ## Docker Compose
 
 Kök dizinden çalıştırın:
@@ -72,6 +78,9 @@ Servisler:
 ## Doğrulama
 
 ```bash
+npm run prisma:generate
+npm run prisma:migrate:dev
+npm run prisma:seed
 npm run build
 npm run lint
 npm run test:e2e -- --runInBand

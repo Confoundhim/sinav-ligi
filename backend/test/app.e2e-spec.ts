@@ -3,7 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
-import { POSTGRES_POOL } from '../src/common/database/database.constants';
+import { PrismaService } from '../src/common/database/prisma.service';
 import { REDIS_CLIENT } from '../src/common/redis/redis.constants';
 
 describe('AppController (e2e)', () => {
@@ -13,9 +13,12 @@ describe('AppController (e2e)', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideProvider(POSTGRES_POOL)
+      .overrideProvider(PrismaService)
       .useValue({
-        query: jest.fn().mockResolvedValue({ rows: [{ '?column?': 1 }] }),
+        $queryRaw: jest.fn().mockResolvedValue([{ '?column?': 1 }]),
+        $connect: jest.fn().mockResolvedValue(undefined),
+        $disconnect: jest.fn().mockResolvedValue(undefined),
+        enableShutdownHooks: jest.fn().mockResolvedValue(undefined),
       })
       .overrideProvider(REDIS_CLIENT)
       .useValue({

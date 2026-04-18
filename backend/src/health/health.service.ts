@@ -1,8 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { Pool } from 'pg';
+import { Injectable } from '@nestjs/common';
 import Redis from 'ioredis';
-import { POSTGRES_POOL } from '../common/database/database.constants';
+import { PrismaService } from '../common/database/prisma.service';
 import { REDIS_CLIENT } from '../common/redis/redis.constants';
+import { Inject } from '@nestjs/common';
 
 type DependencyStatus = {
   status: 'up' | 'down';
@@ -13,7 +13,7 @@ type DependencyStatus = {
 @Injectable()
 export class HealthService {
   constructor(
-    @Inject(POSTGRES_POOL) private readonly postgresPool: Pool,
+    private readonly prisma: PrismaService,
     @Inject(REDIS_CLIENT) private readonly redisClient: Redis,
   ) {}
 
@@ -51,7 +51,7 @@ export class HealthService {
     const startedAt = Date.now();
 
     try {
-      await this.postgresPool.query('SELECT 1');
+      await this.prisma.$queryRaw`SELECT 1`;
       return {
         status: 'up',
         latencyMs: Date.now() - startedAt,

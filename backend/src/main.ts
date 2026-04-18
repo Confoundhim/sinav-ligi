@@ -3,16 +3,19 @@ import { NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
+import { PrismaService } from './common/database/prisma.service';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = app.get(Logger);
+  const prismaService = app.get(PrismaService);
   const corsOrigins = process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim())
     : true;
 
   app.useLogger(logger);
+  await prismaService.enableShutdownHooks(app);
   app.useGlobalFilters(new HttpExceptionFilter());
   app.use(helmet());
   app.enableCors({
