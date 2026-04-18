@@ -59,6 +59,7 @@ const mockPrisma = {
   question: { findMany: jest.fn(), findUnique: jest.fn(), updateMany: jest.fn() },
   examSessionQuestion: {
     findMany: jest.fn(),
+    createMany: jest.fn().mockResolvedValue({ count: 0 }),
     update: jest.fn(),
   },
   examSession: {
