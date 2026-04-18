@@ -1,0 +1,174 @@
+import type { ReactNode } from "react";
+import Link from "next/link";
+import {
+  Bell,
+  CreditCard,
+  LayoutDashboard,
+  Medal,
+  Menu,
+  Settings,
+  ShieldCheck,
+  UserCircle2,
+} from "lucide-react";
+
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+const primaryNavigation = [
+  { href: "/karargah", label: "Karargâh", icon: LayoutDashboard },
+  { href: "/ogretmenler", label: "Öğretmenler", icon: ShieldCheck },
+  { href: "/golge-rakip", label: "Gölge Rakip", icon: Medal },
+  { href: "/haftalik-sinav", label: "Haftalık Sınav", icon: Bell },
+  { href: "/duello", label: "Duello", icon: ShieldCheck },
+  { href: "/ozel-sinav", label: "Özel Sınav", icon: CreditCard },
+  { href: "/karantina", label: "Karantina", icon: Bell },
+  { href: "/muze", label: "Müze", icon: Medal },
+];
+
+const secondaryNavigation = [
+  { href: "/siralama", label: "Sıralama", icon: Medal },
+  { href: "/cuzdan", label: "Cüzdan", icon: CreditCard },
+  { href: "/profil", label: "Profil", icon: UserCircle2 },
+  { href: "/ayarlar", label: "Ayarlar", icon: Settings },
+];
+
+type AppShellProps = {
+  children: ReactNode;
+  currentPath: string;
+};
+
+export function AppShell({ children, currentPath }: AppShellProps) {
+  return (
+    <div className="arena-grid min-h-screen">
+      <div className="mx-auto flex min-h-screen w-full max-w-[1680px] flex-col lg:flex-row">
+        <aside className="border-border/70 bg-sidebar/95 supports-[backdrop-filter]:bg-sidebar/80 flex w-full shrink-0 flex-col border-b px-5 py-6 backdrop-blur-xl lg:w-80 lg:border-r lg:border-b-0 lg:px-6 lg:py-8">
+          <div className="mb-8 flex items-center justify-between lg:mb-10">
+            <div>
+              <p className="text-muted-foreground text-xs tracking-[0.36em] uppercase">
+                Sınav Arenası
+              </p>
+              <Link
+                href="/karargah"
+                className="mt-2 block text-2xl font-semibold tracking-[-0.04em]"
+              >
+                Sınav Ligi
+              </Link>
+            </div>
+            <Button variant="outline" size="icon" className="lg:hidden">
+              <Menu />
+            </Button>
+          </div>
+
+          <div className="exam-card room-card-highlight mb-8 p-5">
+            <Badge className="bg-accent text-accent-foreground hover:bg-accent/90 mb-3">
+              KPSS Elite Sezonu
+            </Badge>
+            <h2 className="text-lg font-semibold tracking-[-0.03em]">
+              Disiplin, tempo ve görünür ilerleme
+            </h2>
+            <p className="text-muted-foreground mt-2 text-sm leading-6">
+              Haftalık ritmini koru, rakiplerini izle ve her odayı stratejik
+              olarak kullan.
+            </p>
+          </div>
+
+          <nav className="space-y-2">
+            {primaryNavigation.map((item) => {
+              const Icon = item.icon;
+              const isActive =
+                currentPath === item.href ||
+                (item.href === "/karargah" && currentPath === "/");
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/80 flex items-center gap-3 rounded-2xl px-4 py-3 text-sm transition-all",
+                    isActive &&
+                      "bg-sidebar-accent text-sidebar-accent-foreground shadow-[inset_0_0_0_1px_rgba(201,168,76,0.15)]",
+                  )}
+                >
+                  <Icon className="size-4" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="glow-divider my-6 h-px w-full" />
+
+          <nav className="space-y-2">
+            {secondaryNavigation.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentPath === item.href;
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/80 flex items-center gap-3 rounded-2xl px-4 py-3 text-sm transition-all",
+                    isActive &&
+                      "bg-sidebar-accent text-sidebar-accent-foreground shadow-[inset_0_0_0_1px_rgba(201,168,76,0.15)]",
+                  )}
+                >
+                  <Icon className="size-4" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="mt-auto hidden lg:block">
+            <div className="arena-shell flex items-center gap-3 p-4">
+              <Avatar className="border-border/70 h-11 w-11 border">
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  SY
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="text-sm font-medium">Seviye 12 Aday</p>
+                <p className="text-muted-foreground text-xs">
+                  Bugün 184 soru tamamlandı
+                </p>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="border-border/70 supports-[backdrop-filter]:bg-background/60 bg-background/90 sticky top-0 z-20 border-b px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-8">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-muted-foreground text-xs tracking-[0.32em] uppercase">
+                  Komuta Merkezi
+                </p>
+                <h1 className="text-2xl font-semibold tracking-[-0.04em] text-balance">
+                  Hedefin görünür, ilerleyişin ölçülebilir
+                </h1>
+              </div>
+              <div className="flex items-center gap-3">
+                <Badge
+                  variant="outline"
+                  className="border-accent/30 bg-accent/10 text-accent px-3 py-1"
+                >
+                  Seri: 14 gün
+                </Badge>
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  Günlük Planı Aç
+                </Button>
+              </div>
+            </div>
+          </header>
+
+          <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+            {children}
+          </main>
+        </div>
+      </div>
+    </div>
+  );
+}
