@@ -39,4 +39,12 @@ export const appConfig = () => ({
   apple: {
     appId: process.env.APPLE_APP_ID ?? '',
   },
+  paytr: {
+    merchantId: process.env.PAYTR_MERCHANT_ID ?? '',
+    merchantKey: process.env.PAYTR_MERCHANT_KEY ?? '',
+    merchantSalt: process.env.PAYTR_MERCHANT_SALT ?? '',
+    testMode: Number(process.env.PAYTR_TEST_MODE ?? '1'),
+    successUrl: process.env.PAYTR_SUCCESS_URL ?? 'http://localhost:3001/payment/success',
+    failUrl: process.env.PAYTR_FAIL_URL ?? 'http://localhost:3001/payment/fail',
+  },
 });

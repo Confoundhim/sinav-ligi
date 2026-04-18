@@ -26,4 +26,10 @@ export const envValidationSchema = Joi.object({
   JWT_REFRESH_EXPIRES_IN: Joi.string().default('7d'),
   GOOGLE_CLIENT_ID: Joi.string().allow('').default(''),
   APPLE_APP_ID: Joi.string().allow('').default(''),
+  PAYTR_MERCHANT_ID: Joi.string().allow('').default(''),
+  PAYTR_MERCHANT_KEY: Joi.string().allow('').default(''),
+  PAYTR_MERCHANT_SALT: Joi.string().allow('').default(''),
+  PAYTR_TEST_MODE: Joi.number().valid(0, 1).default(1),
+  PAYTR_SUCCESS_URL: Joi.string().uri().allow('').default('http://localhost:3001/payment/success'),
+  PAYTR_FAIL_URL: Joi.string().uri().allow('').default('http://localhost:3001/payment/fail'),
 });

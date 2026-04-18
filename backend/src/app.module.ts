@@ -4,6 +4,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { AchievementsModule } from './achievements/achievements.module';
 import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
+import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { appConfig } from './common/config/app.config';
 import { envValidationSchema } from './common/config/env.validation';
 import { DatabaseModule } from './common/database/database.module';
@@ -61,6 +62,7 @@ import { ExamsModule } from './exams/exams.module';
     AdminModule,
     WalletModule,
     AchievementsModule,
+    EnrollmentsModule,
   ],
 })
 export class AppModule {}
