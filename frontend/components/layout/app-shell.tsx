@@ -1,4 +1,6 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { type ReactNode } from "react";
 import Link from "next/link";
 import {
   Bell,
@@ -11,6 +13,7 @@ import {
   UserCircle2,
 } from "lucide-react";
 
+import { useAuth } from "@/providers/auth-provider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,6 +43,17 @@ type AppShellProps = {
 };
 
 export function AppShell({ children, currentPath }: AppShellProps) {
+  const { user } = useAuth();
+
+  const initials = user
+    ? user.name
+        .split(" ")
+        .map((w) => w[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "SL";
+
   return (
     <div className="arena-grid min-h-screen">
       <div className="mx-auto flex min-h-screen w-full max-w-[1680px] flex-col lg:flex-row">
@@ -122,20 +136,41 @@ export function AppShell({ children, currentPath }: AppShellProps) {
             })}
           </nav>
 
+          {user?.role === "admin" && (
+            <>
+              <div className="glow-divider my-4 h-px w-full" />
+              <Link
+                href="/admin/questions"
+                className="text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/80 flex items-center gap-3 rounded-2xl px-4 py-3 text-sm transition-all"
+              >
+                <ShieldCheck className="size-4" />
+                <span>Admin Panel</span>
+              </Link>
+            </>
+          )}
+
           <div className="mt-auto hidden lg:block">
-            <div className="arena-shell flex items-center gap-3 p-4">
-              <Avatar className="border-border/70 h-11 w-11 border">
-                <AvatarFallback className="bg-primary text-primary-foreground">
-                  SY
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="text-sm font-medium">Seviye 12 Aday</p>
-                <p className="text-muted-foreground text-xs">
-                  Bugün 184 soru tamamlandı
-                </p>
+            <Link href="/profil">
+              <div className="arena-shell flex items-center gap-3 p-4 cursor-pointer hover:opacity-90 transition-opacity">
+                <Avatar className="border-border/70 h-11 w-11 border">
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">
+                    {user ? user.name : "Misafir"}
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    {user
+                      ? user.level
+                        ? `Seviye ${user.level}`
+                        : "Aday"
+                      : "Giriş yapılmamış"}
+                  </p>
+                </div>
               </div>
-            </div>
+            </Link>
           </div>
         </aside>
 
@@ -151,15 +186,26 @@ export function AppShell({ children, currentPath }: AppShellProps) {
                 </h1>
               </div>
               <div className="flex items-center gap-3">
-                <Badge
-                  variant="outline"
-                  className="border-accent/30 bg-accent/10 text-accent px-3 py-1"
-                >
-                  Seri: 14 gün
-                </Badge>
-                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  Günlük Planı Aç
-                </Button>
+                {user?.streak ? (
+                  <Badge
+                    variant="outline"
+                    className="border-accent/30 bg-accent/10 text-accent px-3 py-1"
+                  >
+                    Seri: {user.streak} gün
+                  </Badge>
+                ) : (
+                  <Badge
+                    variant="outline"
+                    className="border-accent/30 bg-accent/10 text-accent px-3 py-1"
+                  >
+                    Seri: 0 gün
+                  </Badge>
+                )}
+                <Link href="/ozel-sinav">
+                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                    Günlük Planı Aç
+                  </Button>
+                </Link>
               </div>
             </div>
           </header>

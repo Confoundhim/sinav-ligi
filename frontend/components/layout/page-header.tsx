@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 type PageHeaderProps = {
   eyebrow: string;
   title: string;
-  description: string;
+  description?: string;
   action?: ReactNode;
   badge?: string;
 };
@@ -31,9 +31,11 @@ export function PageHeader({
             </Badge>
           ) : null}
         </div>
-        <p className="text-muted-foreground mt-3 max-w-2xl text-sm leading-7 sm:text-base">
-          {description}
-        </p>
+        {description && (
+          <p className="text-muted-foreground mt-3 max-w-2xl text-sm leading-7 sm:text-base">
+            {description}
+          </p>
+        )}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
     </div>
