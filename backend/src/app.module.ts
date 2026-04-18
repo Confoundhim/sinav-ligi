@@ -13,6 +13,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { PaymentsModule } from './payments/payments.module';
 import { QuestionsModule } from './questions/questions.module';
 import { RankingsModule } from './rankings/rankings.module';
+import { BadgesModule } from './badges/badges.module';
 import { RedisModule } from './common/redis/redis.module';
 import { UsersModule } from './users/users.module';
 import { WalletModule } from './wallet/wallet.module';
@@ -57,6 +58,7 @@ import { ExamsModule } from './exams/exams.module';
     QuestionsModule,
     PaymentsModule,
     RankingsModule,
+    BadgesModule,
     DuelsModule,
     NotificationsModule,
     AdminModule,

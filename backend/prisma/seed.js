@@ -82,6 +82,65 @@ const subjects = [
   },
 ];
 
+const badges = [
+  {
+    name: 'İlk Sınav Tamamlandı',
+    description: 'İlk sınavını tamamladın!',
+    icon: 'trophy',
+    category: 'sınav',
+    criteria: { type: 'exam_count', threshold: 1 },
+  },
+  {
+    name: '10 Sınav Tamamlandı',
+    description: '10 sınav tamamlayan azimli öğrenci!',
+    icon: 'award',
+    category: 'sınav',
+    criteria: { type: 'exam_count', threshold: 10 },
+  },
+  {
+    name: '50 Sınav Tamamlandı',
+    description: '50 sınav tamamlayan şampiyon!',
+    icon: 'star',
+    category: 'sınav',
+    criteria: { type: 'exam_count', threshold: 50 },
+  },
+  {
+    name: 'Karantina Ustası',
+    description: '50 soruyu karantinadan kurtardın!',
+    icon: 'shield',
+    category: 'karantina',
+    criteria: { type: 'quarantine_rescued_count', threshold: 50 },
+  },
+  {
+    name: 'Gölge Rakip Avcısı',
+    description: '5 hafta üst üste gölge rakibini yendin!',
+    icon: 'swords',
+    category: 'düello',
+    criteria: { type: 'duel_win_streak_weekly', weeks: 5 },
+  },
+  {
+    name: 'Video Maratoncusu',
+    description: 'Tüm videoları izleyen meraklı öğrenci!',
+    icon: 'play-circle',
+    category: 'video',
+    criteria: { type: 'video_all_completed' },
+  },
+  {
+    name: 'Haftanın En Gelişeni',
+    description: 'Bu hafta en fazla gelişim gösteren öğrenci!',
+    icon: 'trending-up',
+    category: 'haftalık',
+    criteria: { type: 'weekly_most_improved' },
+  },
+  {
+    name: 'En Çok Düello Kazananı',
+    description: 'Bu hafta en fazla düello kazanan öğrenci!',
+    icon: 'zap',
+    category: 'haftalık',
+    criteria: { type: 'weekly_most_duel_wins' },
+  },
+];
+
 async function main() {
   const kpss = await prisma.examType.upsert({
     where: { name: 'KPSS' },
@@ -137,6 +196,26 @@ async function main() {
         },
       });
     }
+  }
+
+  // Rozet seed
+  for (const badge of badges) {
+    await prisma.badge.upsert({
+      where: { name: badge.name },
+      update: {
+        description: badge.description,
+        icon: badge.icon,
+        category: badge.category,
+        criteria: badge.criteria,
+      },
+      create: {
+        name: badge.name,
+        description: badge.description,
+        icon: badge.icon,
+        category: badge.category,
+        criteria: badge.criteria,
+      },
+    });
   }
 }
 
