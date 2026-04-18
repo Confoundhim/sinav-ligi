@@ -19,6 +19,7 @@ import { UsersModule } from './users/users.module';
 import { WalletModule } from './wallet/wallet.module';
 import { DuelsModule } from './duels/duels.module';
 import { ExamsModule } from './exams/exams.module';
+import { WeeklyExamModule } from './weekly-exam/weekly-exam.module';
 
 @Module({
   imports: [
@@ -65,6 +66,7 @@ import { ExamsModule } from './exams/exams.module';
     WalletModule,
     AchievementsModule,
     EnrollmentsModule,
+    WeeklyExamModule,
   ],
 })
 export class AppModule {}
