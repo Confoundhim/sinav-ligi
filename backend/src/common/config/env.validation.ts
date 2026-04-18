@@ -20,4 +20,10 @@ export const envValidationSchema = Joi.object({
   REDIS_HOST: Joi.string().hostname().default('localhost'),
   REDIS_PORT: Joi.number().default(6379),
   REDIS_PASSWORD: Joi.string().allow('').default(''),
+  JWT_ACCESS_SECRET: Joi.string().default('change-me-access-secret-min-32-chars'),
+  JWT_REFRESH_SECRET: Joi.string().default('change-me-refresh-secret-min-32-chars'),
+  JWT_ACCESS_EXPIRES_IN: Joi.string().default('15m'),
+  JWT_REFRESH_EXPIRES_IN: Joi.string().default('7d'),
+  GOOGLE_CLIENT_ID: Joi.string().allow('').default(''),
+  APPLE_APP_ID: Joi.string().allow('').default(''),
 });

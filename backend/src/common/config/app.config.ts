@@ -25,4 +25,18 @@ export const appConfig = () => ({
     port: Number(process.env.REDIS_PORT ?? 6379),
     password: process.env.REDIS_PASSWORD || undefined,
   },
+  jwt: {
+    accessSecret:
+      process.env.JWT_ACCESS_SECRET ?? 'change-me-access-secret-min-32-chars',
+    refreshSecret:
+      process.env.JWT_REFRESH_SECRET ?? 'change-me-refresh-secret-min-32-chars',
+    accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN ?? '15m',
+    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN ?? '7d',
+  },
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID ?? '',
+  },
+  apple: {
+    appId: process.env.APPLE_APP_ID ?? '',
+  },
 });
