@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../common/database/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { BadgeEvent } from './dto/check-badge.dto';
 
 // ─── Rozet kriterleri tip tanımları ────────────────────────────────────────────
@@ -26,7 +27,10 @@ type BadgeCriteria =
 export class BadgesService {
   private readonly logger = new Logger(BadgesService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   // ─── Tüm Rozetler ──────────────────────────────────────────────────────────────
 
@@ -51,7 +55,11 @@ export class BadgesService {
 
   // ─── Rozet Kazandırma (internal) ──────────────────────────────────────────────
 
-  private async awardBadge(userId: string, badgeId: string): Promise<boolean> {
+  private async awardBadge(
+    userId: string,
+    badgeId: string,
+    badgeName: string,
+  ): Promise<boolean> {
     const exists = await this.prisma.userBadge.findUnique({
       where: { userId_badgeId: { userId, badgeId } },
     });
@@ -59,6 +67,10 @@ export class BadgesService {
 
     await this.prisma.userBadge.create({ data: { userId, badgeId } });
     this.logger.log(`Badge awarded: userId=${userId} badgeId=${badgeId}`);
+
+    // Bildirim gönder
+    void this.notificationsService.notifyBadge(userId, badgeName, badgeId);
+
     return true;
   }
 
@@ -115,7 +127,7 @@ export class BadgesService {
       }
 
       if (earned) {
-        const wasAwarded = await this.awardBadge(userId, badge.id);
+        const wasAwarded = await this.awardBadge(userId, badge.id, badge.name);
         if (wasAwarded) awarded.push(badge.name);
       }
     }
@@ -224,7 +236,7 @@ export class BadgesService {
     });
     if (!badge) return { awarded: false };
 
-    const wasAwarded = await this.awardBadge(winnerId, badge.id);
+    const wasAwarded = await this.awardBadge(winnerId, badge.id, badge.name);
     return { awarded: wasAwarded, userId: winnerId };
   }
 
@@ -236,7 +248,7 @@ export class BadgesService {
     });
     if (!badge) return { awarded: false };
 
-    const wasAwarded = await this.awardBadge(userId, badge.id);
+    const wasAwarded = await this.awardBadge(userId, badge.id, badge.name);
     return { awarded: wasAwarded };
   }
 }

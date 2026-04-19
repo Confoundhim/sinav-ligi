@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../common/database/prisma.service';
 import { NotificationType } from './notifications.constants';
+import { NotificationsGateway } from './notifications.gateway';
 
 export interface CreateNotificationDto {
   userId: string;
@@ -15,10 +16,13 @@ export interface CreateNotificationDto {
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly gateway: NotificationsGateway,
+  ) {}
 
   /**
-   * Yeni bildirim oluşturur
+   * Yeni bildirim oluşturur ve WebSocket ile gönderir
    */
   async create(dto: CreateNotificationDto) {
     const notification = await this.prisma.notification.create({
@@ -30,6 +34,9 @@ export class NotificationsService {
         data: (dto.data ?? {}) as Prisma.InputJsonValue,
       },
     });
+
+    // Real-time bildirim gönder (kullanıcı online ise)
+    this.gateway.sendNotification(dto.userId, notification);
 
     this.logger.log(
       `Bildirim oluşturuldu: userId=${dto.userId}, type=${dto.type}`,

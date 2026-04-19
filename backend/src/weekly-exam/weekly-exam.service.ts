@@ -11,6 +11,8 @@ import { WeeklyExamStatus, WalletTransactionType } from '@prisma/client';
 import type Redis from 'ioredis';
 import { PrismaService } from '../common/database/prisma.service';
 import { WalletService } from '../wallet/wallet.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { EmailService } from '../notifications/email/email.service';
 import { REDIS_CLIENT } from '../common/redis/redis.constants';
 import { CreateWeeklyExamDto } from './dto/create-weekly-exam.dto';
 import { UpdateWeeklyExamDto } from './dto/update-weekly-exam.dto';
@@ -45,6 +47,8 @@ export class WeeklyExamService {
     private readonly prisma: PrismaService,
     private readonly walletService: WalletService,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
+    private readonly notificationsService: NotificationsService,
+    private readonly emailService: EmailService,
   ) {}
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -283,6 +287,15 @@ export class WeeklyExamService {
         scholarshipsAwarded++;
         this.logger.log(
           `Burs verildi: userId=${winner.userId}, rank=${winners.indexOf(winner) + 1}`,
+        );
+
+        // Bildirim gönder
+        void this.notificationsService.notifyScholarship(
+          winner.userId,
+          SCHOLARSHIP_AMOUNT,
+          winners.indexOf(winner) + 1,
+          exam.examTypeId,
+          id,
         );
       } catch (err) {
         this.logger.error(

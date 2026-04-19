@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../common/database/database.module';
 import { WalletModule } from '../wallet/wallet.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import {
   AdminWeeklyExamController,
   WeeklyExamController,
@@ -8,7 +9,7 @@ import {
 import { WeeklyExamService } from './weekly-exam.service';
 
 @Module({
-  imports: [DatabaseModule, WalletModule],
+  imports: [DatabaseModule, WalletModule, NotificationsModule],
   controllers: [AdminWeeklyExamController, WeeklyExamController],
   providers: [WeeklyExamService],
   exports: [WeeklyExamService],

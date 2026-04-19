@@ -11,9 +11,11 @@ import {
   Settings,
   ShieldCheck,
   UserCircle2,
+  Moon,
 } from "lucide-react";
 
 import { useAuth } from "@/providers/auth-provider";
+import { useNightMode } from "@/providers/night-mode-provider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,6 +46,7 @@ type AppShellProps = {
 
 export function AppShell({ children, currentPath }: AppShellProps) {
   const { user } = useAuth();
+  const { isNightModeActive, isNightShiftHours, toggleNightMode } = useNightMode();
 
   const initials = user
     ? user.name
@@ -136,6 +139,31 @@ export function AppShell({ children, currentPath }: AppShellProps) {
             })}
           </nav>
 
+          {/* Night Mode Badge in Sidebar */}
+          {isNightShiftHours && (
+            <div className="mt-4">
+              <button
+                onClick={toggleNightMode}
+                className={cn(
+                  "w-full flex items-center gap-3 rounded-2xl px-4 py-3 text-sm transition-all cursor-pointer",
+                  isNightModeActive
+                    ? "bg-gradient-to-r from-[#8b9dc3]/20 to-[#6b8cae]/10 border border-[#8b9dc3]/30 text-[#8b9dc3]"
+                    : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                )}
+              >
+                <Moon className="size-4" />
+                <div className="flex flex-col items-start">
+                  <span className="font-medium">
+                    {isNightModeActive ? "Gece Mesaisi" : "Gece Modu"}
+                  </span>
+                  <span className="text-[10px] opacity-80">
+                    {isNightModeActive ? "1.5x Bonus Aktif" : "Aktif etmek için tıkla"}
+                  </span>
+                </div>
+              </button>
+            </div>
+          )}
+
           {user?.role === "admin" && (
             <>
               <div className="glow-divider my-4 h-px w-full" />
@@ -186,6 +214,16 @@ export function AppShell({ children, currentPath }: AppShellProps) {
                 </h1>
               </div>
               <div className="flex items-center gap-3">
+                {isNightModeActive && (
+                  <Badge
+                    variant="outline"
+                    className="gap-1.5 border-[#6b8cae]/40 bg-[#6b8cae]/10 text-[#8b9dc3] px-3 py-1"
+                  >
+                    <Moon className="h-3 w-3" />
+                    <span>Fısıltı Modu</span>
+                    <span className="text-[#6b8cae]">1.5x</span>
+                  </Badge>
+                )}
                 {user?.streak ? (
                   <Badge
                     variant="outline"

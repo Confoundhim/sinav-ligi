@@ -22,6 +22,7 @@ import { ExamsModule } from './exams/exams.module';
 import { WeeklyExamModule } from './weekly-exam/weekly-exam.module';
 import { VideosModule } from './videos/videos.module';
 import { FriendsModule } from './friends/friends.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import { FriendsModule } from './friends/friends.module';
     WeeklyExamModule,
     VideosModule,
     FriendsModule,
+    SettingsModule,
   ],
 })
 export class AppModule {}

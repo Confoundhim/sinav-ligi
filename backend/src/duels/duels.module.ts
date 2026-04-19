@@ -6,10 +6,12 @@ import { DuelsService } from './duels.service';
 import { DuelGateway } from './duels.gateway';
 import { WsJwtGuard } from './guards/ws-jwt.guard';
 import { DatabaseModule } from '../common/database/database.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
     DatabaseModule,
+    NotificationsModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

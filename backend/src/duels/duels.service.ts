@@ -10,6 +10,7 @@ import { REDIS_CLIENT } from '../common/redis/redis.constants';
 import Redis from 'ioredis';
 import { DuelMatchStatus } from '@prisma/client';
 import { ChallengeDto, MatchmakingDto } from './dto/challenge.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 const DUEL_QUESTION_COUNT = 20;
 const DAILY_RIGHT_LIMIT = 1;
@@ -39,6 +40,7 @@ export class DuelsService {
   constructor(
     private readonly prisma: PrismaService,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   // ─── Yardımcılar ─────────────────────────────────────────────────────────
@@ -178,6 +180,13 @@ export class DuelsService {
         examType: { select: { name: true } },
       },
     });
+
+    // Bildirim gönder
+    void this.notificationsService.notifyDuelInvite(
+      dto.opponentId,
+      match.challenger.displayName,
+      match.id,
+    );
 
     return match;
   }
@@ -451,6 +460,45 @@ export class DuelsService {
       data: { status: DuelMatchStatus.COMPLETED, winnerId },
     });
 
+    // Bildirimleri gönder
+    const challengerName = await this.getUserDisplayName(challengerId);
+    const opponentName = await this.getUserDisplayName(opponentId);
+
+    if (winnerId) {
+      const loserId = winnerId === challengerId ? opponentId : challengerId;
+      const winnerResult: 'won' | 'lost' = 'won';
+      const loserResult: 'won' | 'lost' = 'lost';
+
+      void this.notificationsService.notifyDuelResult(
+        winnerId,
+        winnerResult,
+        winnerId === challengerId ? opponentName : challengerName,
+        duelId,
+        betPoints > 0 ? betPoints : undefined,
+      );
+
+      void this.notificationsService.notifyDuelResult(
+        loserId,
+        loserResult,
+        winnerId === challengerId ? challengerName : opponentName,
+        duelId,
+      );
+    } else {
+      // Berabere
+      void this.notificationsService.notifyDuelResult(
+        challengerId,
+        'draw',
+        opponentName,
+        duelId,
+      );
+      void this.notificationsService.notifyDuelResult(
+        opponentId,
+        'draw',
+        challengerName,
+        duelId,
+      );
+    }
+
     // Bahis puanı transferi (winner alır, loser kaybeder)
     if (winnerId && betPoints > 0) {
       const loserId = winnerId === challengerId ? opponentId : challengerId;
@@ -518,6 +566,14 @@ export class DuelsService {
         },
       }),
     ]);
+  }
+
+  private async getUserDisplayName(userId: string): Promise<string> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { displayName: true },
+    });
+    return user?.displayName ?? 'Bilinmeyen Kullanıcı';
   }
 
   // ─── Sorgu Metodları ──────────────────────────────────────────────────────

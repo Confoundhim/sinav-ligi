@@ -16,6 +16,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { PrismaService } from '../common/database/prisma.service';
 import { REDIS_CLIENT } from '../common/redis/redis.constants';
 import { UsersService } from '../users/users.service';
+import { EmailService } from '../notifications/email/email.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -74,6 +75,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
+    private readonly emailService: EmailService,
   ) {
     this.googleClient = new OAuth2Client(
       this.configService.get<string>('google.clientId'),
@@ -111,6 +113,10 @@ export class AuthService {
     const deviceId = randomUUID();
     const tokens = await this.generateTokens(user, deviceId);
     await this.createSession(user.id, deviceId, tokens.refreshToken);
+
+    // Hoş geldin emaili gönder
+    void this.emailService.sendWelcomeEmail(user.email, user.displayName);
+
     return tokens;
   }
 
@@ -209,9 +215,9 @@ export class AuthService {
     if (user) {
       const resetToken = randomUUID();
       await this.redis.setex(`password_reset:${resetToken}`, 900, user.id);
-      console.log(
-        `[AUTH] Password reset token for ${user.email}: ${resetToken}`,
-      );
+
+      // Şifre sıfırlama emaili gönder
+      void this.emailService.sendPasswordResetEmail(user.email, resetToken);
     }
     return { message: 'If the email exists, a reset link has been sent' };
   }
