@@ -82,7 +82,8 @@ export class SettingsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Hesabı sil (soft delete)' })
   @ApiOkResponse({ description: 'Hesap silindi' })
-  async deleteAccount(@CurrentUser() user: JwtPayload): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-unused-vars
+  async deleteAccount(@CurrentUser() _user: JwtPayload): Promise<void> {
     // TODO: Implement account deletion logic
     // This should mark the user as inactive and schedule deletion
     throw new Error('Account deletion not implemented yet');
