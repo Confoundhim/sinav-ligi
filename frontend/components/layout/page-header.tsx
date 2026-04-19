@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 
 type PageHeaderProps = {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   description?: string;
   action?: ReactNode;
@@ -20,9 +20,11 @@ export function PageHeader({
   return (
     <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
       <div className="max-w-3xl">
-        <p className="text-muted-foreground mb-3 text-xs tracking-[0.32em] uppercase">
-          {eyebrow}
-        </p>
+        {eyebrow && (
+          <p className="text-muted-foreground mb-3 text-xs tracking-[0.32em] uppercase">
+            {eyebrow}
+          </p>
+        )}
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="section-title">{title}</h2>
           {badge ? (

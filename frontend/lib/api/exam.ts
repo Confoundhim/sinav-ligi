@@ -10,7 +10,7 @@ import type {
   WeeklyExam,
   WeeklyExamDetail,
   WeeklyExamResult,
-  WeeklyExamHistory,
+  WeeklyExamHistoryItem,
   QuarantineItem,
   QuarantineQuestion,
   QuarantineAttemptResult,
@@ -64,8 +64,8 @@ export async function getUpcomingWeeklyExams(): Promise<WeeklyExam[]> {
   return apiRequest<WeeklyExam[]>("/weekly-exams/upcoming");
 }
 
-export async function getWeeklyExamHistory(): Promise<WeeklyExamHistory[]> {
-  return apiRequest<WeeklyExamHistory[]>("/weekly-exams/history");
+export async function getWeeklyExamHistory(): Promise<WeeklyExamHistoryItem[]> {
+  return apiRequest<WeeklyExamHistoryItem[]>("/weekly-exams/history");
 }
 
 export async function registerForWeeklyExam(examId: string): Promise<{ message: string; examId: string; scheduledAt: string; fee: number }> {
