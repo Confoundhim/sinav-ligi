@@ -199,3 +199,260 @@ export interface Transaction {
   description: string;
   createdAt: string;
 }
+
+// ─── Duels ────────────────────────────────────────────────────────────────────
+
+export type DuelStatus = "pending" | "active" | "completed" | "declined" | "expired";
+export type DuelResult = "win" | "loss" | "draw" | null;
+
+export interface DuelUser {
+  id: string;
+  name: string;
+  avatar?: string;
+  level?: number;
+}
+
+export interface Duel {
+  id: string;
+  challengerId: string;
+  opponentId: string;
+  challenger?: DuelUser;
+  opponent?: DuelUser;
+  examTypeId: string;
+  examType?: { id: string; name: string };
+  betPoints: number;
+  status: DuelStatus;
+  result?: DuelResult;
+  winnerId?: string | null;
+  challengerScore?: number;
+  opponentScore?: number;
+  questions?: ExamQuestion[];
+  createdAt: string;
+  startedAt?: string;
+  finishedAt?: string;
+}
+
+export interface DuelRights {
+  dailyLimit: number;
+  usedToday: number;
+  remaining: number;
+  nextReset: string;
+}
+
+export interface DuelStats {
+  totalDuels: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  winRate: number;
+  totalPointsWon: number;
+  totalPointsLost: number;
+  currentStreak: number;
+  bestStreak: number;
+}
+
+export interface ChallengeRequest {
+  opponentId: string;
+  examTypeId: string;
+  betPoints: number;
+}
+
+export interface MatchmakingRequest {
+  examTypeId: string;
+  betPoints: number;
+}
+
+export interface MatchmakingResponse {
+  matched: boolean;
+  duel?: Duel;
+  queuePosition?: number;
+  estimatedWait?: number;
+}
+
+// ─── Achievements ─────────────────────────────────────────────────────────────
+
+export interface Certificate {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  earnedAt: string;
+  subject?: string;
+  score?: number;
+}
+
+export interface Trophy {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  tier: "bronze" | "silver" | "gold" | "platinum" | "diamond";
+  earnedAt: string;
+  rarity: number;
+}
+
+export interface WisdomTreeBranch {
+  subjectId: string;
+  subjectName: string;
+  totalLeaves: number;
+  earnedLeaves: number;
+  progress: number;
+  icon: string;
+  color: string;
+}
+
+export interface WisdomTree {
+  totalBranches: number;
+  completedBranches: number;
+  totalLeaves: number;
+  earnedLeaves: number;
+  branches: WisdomTreeBranch[];
+}
+
+export interface Museum {
+  user: DuelUser;
+  privacy: "PUBLIC" | "FRIENDS" | "PRIVATE";
+  canView: boolean;
+  certificates: Certificate[];
+  trophies: Trophy[];
+  wisdomTree: WisdomTree;
+  totalCongratulations: number;
+}
+
+export interface CongratulateRequest {
+  message: string;
+}
+
+// ─── Badges ───────────────────────────────────────────────────────────────────
+
+export interface BadgeDefinition {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  category: string;
+  condition: string;
+}
+
+export interface UserBadge {
+  id: string;
+  badgeId: string;
+  badge: BadgeDefinition;
+  earnedAt: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Haftalık Sınav Types
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface WeeklyExam {
+  id: string;
+  examTypeId: string;
+  scheduledAt: string;
+  status: "DRAFT" | "PUBLISHED" | "ACTIVE" | "COMPLETED";
+  entryFee: number;
+  minParticipants: number;
+  resultAnnouncedAt?: string;
+  examType?: { name: string };
+  _count?: { participants: number; questions: number };
+}
+
+export interface WeeklyExamQuestion {
+  order: number;
+  question: {
+    id: string;
+    content: string;
+    difficulty: Difficulty;
+    questionType: { name: string };
+  };
+}
+
+export interface WeeklyExamDetail {
+  examId: string;
+  scheduledAt: string;
+  examEnd: string;
+  remainingMs: number;
+  totalQuestions: number;
+  questions: WeeklyExamQuestion[];
+  startedAt: string;
+}
+
+export interface WeeklyExamResult {
+  examId: string;
+  examType: string;
+  scheduledAt: string;
+  resultAnnouncedAt: string;
+  score: number;
+  rank: number | null;
+  totalParticipants: number;
+  finishedAt: string | null;
+  scholarshipEarned: number;
+}
+
+export interface WeeklyExamHistoryItem {
+  weeklyExamId: string;
+  userId: string;
+  score: number | null;
+  rank: number | null;
+  startedAt: string | null;
+  finishedAt: string | null;
+  weeklyExam: {
+    id: string;
+    scheduledAt: string;
+    resultAnnouncedAt: string | null;
+    status: string;
+    examType: { name: string };
+    _count: { participants: number };
+  };
+}
+
+export type WeeklyExamHistory = WeeklyExamHistoryItem[];
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Karantina Types
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface QuarantineAttempt {
+  isCorrect: boolean;
+  attemptedAt: string;
+}
+
+export interface QuarantineItem {
+  id: string;
+  userId: string;
+  questionId: string;
+  examSessionId: string;
+  status: "ACTIVE" | "RESCUED" | "EXPIRED";
+  quarantinedAt: string;
+  rescuedAt: string | null;
+  question: {
+    id: string;
+    content: string;
+    difficulty: Difficulty;
+    questionType: { name: string; subjectId: string };
+  };
+  attempts: QuarantineAttempt[];
+}
+
+export interface QuarantineQuestion {
+  quarantineId: string;
+  question: {
+    id: string;
+    content: string;
+    difficulty: Difficulty;
+    questionType: { name: string };
+  };
+  progress: {
+    correct: number;
+    required: number;
+  };
+}
+
+export interface QuarantineAttemptResult {
+  isCorrect: boolean;
+  rescued: boolean;
+  progress: {
+    correct: number;
+    required: number;
+  };
+}
