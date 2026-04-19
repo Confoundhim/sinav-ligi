@@ -35,7 +35,9 @@ export class WalletController {
   @Get()
   @ApiOperation({ summary: 'Cüzdan bakiyesi ve genel bilgi' })
   @ApiOkResponse({ description: 'Cüzdan bakiyesi ve son 50 işlem' })
-  async getWallet(@CurrentUser() user: JwtPayload): Promise<Wallet & { transactions: WalletTransaction[] }> {
+  async getWallet(
+    @CurrentUser() user: JwtPayload,
+  ): Promise<Wallet & { transactions: WalletTransaction[] }> {
     return this.walletService.getWalletWithTransactions(user.sub);
   }
 
@@ -48,17 +50,24 @@ export class WalletController {
     @Ip() ip: string,
     @Body() dto: DepositDto,
   ): Promise<PaytrTokenResult> {
-    return this.paymentsService.createPayment(user.sub, user.email, ip || '127.0.0.1', {
-      type: PaymentType.DEPOSIT,
-      amount: dto.amount,
-      description: `${dto.amount} TL cüzdan yükleme`,
-    });
+    return this.paymentsService.createPayment(
+      user.sub,
+      user.email,
+      ip || '127.0.0.1',
+      {
+        type: PaymentType.DEPOSIT,
+        amount: dto.amount,
+        description: `${dto.amount} TL cüzdan yükleme`,
+      },
+    );
   }
 
   @Get('transactions')
   @ApiOperation({ summary: 'Cüzdan işlem geçmişi' })
   @ApiOkResponse({ description: 'Son 100 cüzdan işlemi' })
-  async getTransactions(@CurrentUser() user: JwtPayload): Promise<WalletTransaction[]> {
+  async getTransactions(
+    @CurrentUser() user: JwtPayload,
+  ): Promise<WalletTransaction[]> {
     return this.walletService.getTransactions(user.sub);
   }
 }

@@ -165,10 +165,16 @@ export class PaymentsService {
       throw new InternalServerErrorException('PayTR servisi yanıt vermedi.');
     }
 
-    const data = (await response.json()) as { status: string; token?: string; reason?: string };
+    const data = (await response.json()) as {
+      status: string;
+      token?: string;
+      reason?: string;
+    };
 
     if (data.status !== 'success' || !data.token) {
-      this.logger.error(`PayTR token hatası: ${data.reason ?? 'Bilinmeyen hata'}`);
+      this.logger.error(
+        `PayTR token hatası: ${data.reason ?? 'Bilinmeyen hata'}`,
+      );
       throw new InternalServerErrorException('PayTR token alınamadı.');
     }
 
@@ -181,7 +187,14 @@ export class PaymentsService {
    */
   async handleCallback(dto: PaytrCallbackDto): Promise<string> {
     // 1. Hash doğrulama (güvenlik kritik)
-    if (!this.verifyCallbackHash(dto.merchant_oid, dto.status, dto.total_amount, dto.hash)) {
+    if (
+      !this.verifyCallbackHash(
+        dto.merchant_oid,
+        dto.status,
+        dto.total_amount,
+        dto.hash,
+      )
+    ) {
       this.logger.warn(`PayTR hash doğrulama başarısız: ${dto.merchant_oid}`);
       throw new UnauthorizedException('PAYTR notification failed: bad hash');
     }
@@ -197,7 +210,10 @@ export class PaymentsService {
     }
 
     // 3. İdempotency: zaten işlenmiş mi?
-    if (payment.status === PaymentStatus.COMPLETED || payment.status === PaymentStatus.REFUNDED) {
+    if (
+      payment.status === PaymentStatus.COMPLETED ||
+      payment.status === PaymentStatus.REFUNDED
+    ) {
       this.logger.log(`Ödeme zaten işlendi: ${payment.id} (${payment.status})`);
       return 'OK';
     }
@@ -210,7 +226,9 @@ export class PaymentsService {
         where: { id: payment.id },
         data: { status: PaymentStatus.FAILED },
       });
-      this.logger.log(`Ödeme başarısız: ${payment.id}, kod: ${dto.failed_reason_code ?? '-'}`);
+      this.logger.log(
+        `Ödeme başarısız: ${payment.id}, kod: ${dto.failed_reason_code ?? '-'}`,
+      );
     }
 
     return 'OK';
@@ -229,14 +247,25 @@ export class PaymentsService {
 
     switch (payment.type) {
       case PaymentType.DEPOSIT:
-        await this.processDeposit(payment.userId, payment.id, Number(payment.amount));
+        await this.processDeposit(
+          payment.userId,
+          payment.id,
+          Number(payment.amount),
+        );
         break;
 
       case PaymentType.ENROLLMENT: {
         const examTypeId = meta?.examTypeId as string | undefined;
-        const year = (meta?.year as number | undefined) ?? new Date().getFullYear();
+        const year =
+          (meta?.year as number | undefined) ?? new Date().getFullYear();
         if (examTypeId) {
-          await this.processEnrollment(payment.userId, payment.id, examTypeId, year, Number(payment.amount));
+          await this.processEnrollment(
+            payment.userId,
+            payment.id,
+            examTypeId,
+            year,
+            Number(payment.amount),
+          );
         }
         break;
       }
@@ -244,7 +273,11 @@ export class PaymentsService {
       case PaymentType.WEEKLY_EXAM: {
         const weeklyExamId = meta?.weeklyExamId as string | undefined;
         if (weeklyExamId) {
-          await this.processWeeklyExam(payment.userId, payment.id, weeklyExamId);
+          await this.processWeeklyExam(
+            payment.userId,
+            payment.id,
+            weeklyExamId,
+          );
         }
         break;
       }
@@ -256,7 +289,11 @@ export class PaymentsService {
     this.logger.log(`Ödeme başarıyla işlendi: ${payment.id} (${payment.type})`);
   }
 
-  private async processDeposit(userId: string, paymentId: string, amount: number): Promise<void> {
+  private async processDeposit(
+    userId: string,
+    paymentId: string,
+    amount: number,
+  ): Promise<void> {
     const wallet = await this.prisma.wallet.upsert({
       where: { userId },
       create: { userId, balance: 0, totalEarned: 0, totalSpent: 0 },
@@ -305,11 +342,17 @@ export class PaymentsService {
       if ((e as { code?: string }).code !== 'P2002') {
         throw e;
       }
-      this.logger.warn(`Enrollment zaten mevcut: ${userId}/${examTypeId}/${year}`);
+      this.logger.warn(
+        `Enrollment zaten mevcut: ${userId}/${examTypeId}/${year}`,
+      );
     }
   }
 
-  private async processWeeklyExam(userId: string, paymentId: string, weeklyExamId: string): Promise<void> {
+  private async processWeeklyExam(
+    userId: string,
+    paymentId: string,
+    weeklyExamId: string,
+  ): Promise<void> {
     try {
       await this.prisma.weeklyExamParticipant.create({
         data: {
@@ -322,7 +365,9 @@ export class PaymentsService {
       if ((e as { code?: string }).code !== 'P2002') {
         throw e;
       }
-      this.logger.warn(`WeeklyExamParticipant zaten mevcut: ${userId}/${weeklyExamId}`);
+      this.logger.warn(
+        `WeeklyExamParticipant zaten mevcut: ${userId}/${weeklyExamId}`,
+      );
     }
   }
 
@@ -341,7 +386,12 @@ export class PaymentsService {
    * PayTR callback hash doğrulama
    * hash = base64(hmac_sha256(merchant_oid + merchant_salt + status + total_amount, merchant_key))
    */
-  verifyCallbackHash(merchantOid: string, status: string, totalAmount: string, receivedHash: string): boolean {
+  verifyCallbackHash(
+    merchantOid: string,
+    status: string,
+    totalAmount: string,
+    receivedHash: string,
+  ): boolean {
     const computed = crypto
       .createHmac('sha256', this.merchantKey)
       .update(merchantOid + this.merchantSalt + status + totalAmount)

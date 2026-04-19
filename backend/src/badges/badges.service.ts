@@ -5,7 +5,10 @@ import { BadgeEvent } from './dto/check-badge.dto';
 // ─── Rozet kriterleri tip tanımları ────────────────────────────────────────────
 
 type ExamCountCriteria = { type: 'exam_count'; threshold: number };
-type QuarantineRescuedCriteria = { type: 'quarantine_rescued_count'; threshold: number };
+type QuarantineRescuedCriteria = {
+  type: 'quarantine_rescued_count';
+  threshold: number;
+};
 type DuelWinStreakCriteria = { type: 'duel_win_streak_weekly'; weeks: number };
 type VideoMarathonCriteria = { type: 'video_all_completed' };
 type WeeklyMostImprovedCriteria = { type: 'weekly_most_improved' };
@@ -86,7 +89,10 @@ export class BadgesService {
 
         case 'quarantine_rescued_count':
           if (event === BadgeEvent.QUARANTINE_RESCUED) {
-            earned = await this.checkQuarantineRescued(userId, criteria.threshold);
+            earned = await this.checkQuarantineRescued(
+              userId,
+              criteria.threshold,
+            );
           }
           break;
 
@@ -120,21 +126,30 @@ export class BadgesService {
 
   // ─── Rozet Kriterleri Kontrolleri ──────────────────────────────────────────────
 
-  private async checkExamCount(userId: string, threshold: number): Promise<boolean> {
+  private async checkExamCount(
+    userId: string,
+    threshold: number,
+  ): Promise<boolean> {
     const count = await this.prisma.examSession.count({
       where: { userId, finishedAt: { not: null } },
     });
     return count >= threshold;
   }
 
-  private async checkQuarantineRescued(userId: string, threshold: number): Promise<boolean> {
+  private async checkQuarantineRescued(
+    userId: string,
+    threshold: number,
+  ): Promise<boolean> {
     const count = await this.prisma.quarantineItem.count({
       where: { userId, status: 'RESCUED' },
     });
     return count >= threshold;
   }
 
-  private async checkDuelWinStreak(userId: string, weeks: number): Promise<boolean> {
+  private async checkDuelWinStreak(
+    userId: string,
+    weeks: number,
+  ): Promise<boolean> {
     // Son N hafta içinde her hafta en az 1 düello galibiyet var mı?
     const now = new Date();
     const weekStart = new Date(now);
@@ -163,7 +178,9 @@ export class BadgesService {
   }
 
   private getISOWeek(date: Date): number {
-    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const d = new Date(
+      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+    );
     const dayNum = d.getUTCDay() || 7;
     d.setUTCDate(d.getUTCDate() + 4 - dayNum);
     const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
@@ -180,7 +197,10 @@ export class BadgesService {
 
   // ─── Haftalık Rozet: En Çok Düello Kazananı ───────────────────────────────────
 
-  async awardWeeklyDuelWinner(): Promise<{ awarded: boolean; userId?: string }> {
+  async awardWeeklyDuelWinner(): Promise<{
+    awarded: boolean;
+    userId?: string;
+  }> {
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
 
@@ -198,7 +218,7 @@ export class BadgesService {
 
     if (!results.length || !results[0]?.winnerId) return { awarded: false };
 
-    const winnerId = results[0].winnerId as string;
+    const winnerId = results[0].winnerId;
     const badge = await this.prisma.badge.findFirst({
       where: { criteria: { path: ['type'], equals: 'weekly_most_duel_wins' } },
     });

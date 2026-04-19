@@ -63,7 +63,12 @@ describe('BadgesService', () => {
     it('kullanıcının rozetlerini döndürmeli', async () => {
       mockPrisma.badge.findMany = jest.fn();
       (mockPrisma as any).userBadge.findMany = jest.fn().mockResolvedValue([
-        { userId: USER_ID, badgeId: 'b1', earnedAt: new Date(), badge: makeBadge('exam_count') },
+        {
+          userId: USER_ID,
+          badgeId: 'b1',
+          earnedAt: new Date(),
+          badge: makeBadge('exam_count'),
+        },
       ]);
 
       const result = await service.findMyBadges(USER_ID);
@@ -85,7 +90,10 @@ describe('BadgesService', () => {
       mockPrisma.examSession.count.mockResolvedValue(1);
       mockPrisma.userBadge.create.mockResolvedValue({});
 
-      const result = await service.checkBadges(USER_ID, BadgeEvent.EXAM_COMPLETED);
+      const result = await service.checkBadges(
+        USER_ID,
+        BadgeEvent.EXAM_COMPLETED,
+      );
 
       expect(result.awarded).toHaveLength(1);
       expect(mockPrisma.userBadge.create).toHaveBeenCalledTimes(1);
@@ -94,7 +102,10 @@ describe('BadgesService', () => {
     it('eşik aşılmadığında rozet kazandırılmamalı', async () => {
       mockPrisma.examSession.count.mockResolvedValue(0);
 
-      const result = await service.checkBadges(USER_ID, BadgeEvent.EXAM_COMPLETED);
+      const result = await service.checkBadges(
+        USER_ID,
+        BadgeEvent.EXAM_COMPLETED,
+      );
 
       expect(result.awarded).toHaveLength(0);
       expect(mockPrisma.userBadge.create).not.toHaveBeenCalled();
@@ -102,9 +113,15 @@ describe('BadgesService', () => {
 
     it('rozet zaten kazanılmışsa tekrar verilmemeli', async () => {
       mockPrisma.examSession.count.mockResolvedValue(5);
-      mockPrisma.userBadge.findUnique.mockResolvedValue({ userId: USER_ID, badgeId: 'badge-exam_count' });
+      mockPrisma.userBadge.findUnique.mockResolvedValue({
+        userId: USER_ID,
+        badgeId: 'badge-exam_count',
+      });
 
-      const result = await service.checkBadges(USER_ID, BadgeEvent.EXAM_COMPLETED);
+      const result = await service.checkBadges(
+        USER_ID,
+        BadgeEvent.EXAM_COMPLETED,
+      );
 
       expect(result.awarded).toHaveLength(0);
       expect(mockPrisma.userBadge.create).not.toHaveBeenCalled();
@@ -116,13 +133,20 @@ describe('BadgesService', () => {
   describe('checkBadges (quarantine_rescued_count)', () => {
     it('50 kurtarılan soru ile Karantina Ustası rozeti verilmeli', async () => {
       mockPrisma.badge.findMany.mockResolvedValue([
-        { id: 'badge-karantina', name: 'Karantina Ustası', criteria: { type: 'quarantine_rescued_count', threshold: 50 } },
+        {
+          id: 'badge-karantina',
+          name: 'Karantina Ustası',
+          criteria: { type: 'quarantine_rescued_count', threshold: 50 },
+        },
       ]);
       mockPrisma.userBadge.findUnique.mockResolvedValue(null);
       mockPrisma.quarantineItem.count.mockResolvedValue(50);
       mockPrisma.userBadge.create.mockResolvedValue({});
 
-      const result = await service.checkBadges(USER_ID, BadgeEvent.QUARANTINE_RESCUED);
+      const result = await service.checkBadges(
+        USER_ID,
+        BadgeEvent.QUARANTINE_RESCUED,
+      );
 
       expect(result.awarded).toContain('Karantina Ustası');
     });
@@ -133,26 +157,40 @@ describe('BadgesService', () => {
   describe('checkBadges (video_all_completed)', () => {
     it('tüm videolar tamamlandığında Video Maratoncusu rozeti verilmeli', async () => {
       mockPrisma.badge.findMany.mockResolvedValue([
-        { id: 'badge-video', name: 'Video Maratoncusu', criteria: { type: 'video_all_completed' } },
+        {
+          id: 'badge-video',
+          name: 'Video Maratoncusu',
+          criteria: { type: 'video_all_completed' },
+        },
       ]);
       mockPrisma.userBadge.findUnique.mockResolvedValue(null);
       mockPrisma.video.count.mockResolvedValue(10);
       mockPrisma.videoProgress.count.mockResolvedValue(10);
       mockPrisma.userBadge.create.mockResolvedValue({});
 
-      const result = await service.checkBadges(USER_ID, BadgeEvent.VIDEO_WATCHED);
+      const result = await service.checkBadges(
+        USER_ID,
+        BadgeEvent.VIDEO_WATCHED,
+      );
 
       expect(result.awarded).toContain('Video Maratoncusu');
     });
 
     it('eksik video varsa rozet verilmemeli', async () => {
       mockPrisma.badge.findMany.mockResolvedValue([
-        { id: 'badge-video', name: 'Video Maratoncusu', criteria: { type: 'video_all_completed' } },
+        {
+          id: 'badge-video',
+          name: 'Video Maratoncusu',
+          criteria: { type: 'video_all_completed' },
+        },
       ]);
       mockPrisma.video.count.mockResolvedValue(10);
       mockPrisma.videoProgress.count.mockResolvedValue(7);
 
-      const result = await service.checkBadges(USER_ID, BadgeEvent.VIDEO_WATCHED);
+      const result = await service.checkBadges(
+        USER_ID,
+        BadgeEvent.VIDEO_WATCHED,
+      );
 
       expect(result.awarded).toHaveLength(0);
     });
@@ -166,7 +204,8 @@ describe('BadgesService', () => {
         { winnerId: 'user-winner', _count: { winnerId: 5 } },
       ]);
       mockPrisma.badge.findFirst.mockResolvedValue({
-        id: 'badge-duel', name: 'En Çok Düello Kazananı',
+        id: 'badge-duel',
+        name: 'En Çok Düello Kazananı',
       });
       mockPrisma.userBadge.findUnique.mockResolvedValue(null);
       mockPrisma.userBadge.create.mockResolvedValue({});

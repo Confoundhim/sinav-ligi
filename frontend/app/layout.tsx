@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import { AuthProvider } from "@/providers/auth-provider";
+import { NightModeProvider } from "@/providers/night-mode-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -41,7 +42,9 @@ export default function RootLayout({
           forcedTheme="dark"
         >
           <AuthProvider>
-            {children}
+            <NightModeProvider>
+              {children}
+            </NightModeProvider>
           </AuthProvider>
           <Toaster richColors position="top-right" />
         </ThemeProvider>

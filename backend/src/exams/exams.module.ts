@@ -9,7 +9,11 @@ import { DatabaseModule } from '../common/database/database.module';
 
 @Module({
   imports: [DatabaseModule],
-  controllers: [ExamsController, QuarantineController, AdminQuarantineController],
+  controllers: [
+    ExamsController,
+    QuarantineController,
+    AdminQuarantineController,
+  ],
   providers: [ExamsService],
   exports: [ExamsService],
 })

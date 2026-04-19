@@ -17,7 +17,9 @@ export class CheckBadgeDto {
   @IsEnum(BadgeEvent)
   event!: BadgeEvent;
 
-  @ApiPropertyOptional({ description: 'Ek meta veri (examTypeId, betPoints vb.)' })
+  @ApiPropertyOptional({
+    description: 'Ek meta veri (examTypeId, betPoints vb.)',
+  })
   @IsOptional()
   metadata?: Record<string, unknown>;
 }

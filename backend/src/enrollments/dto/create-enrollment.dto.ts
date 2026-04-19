@@ -7,7 +7,10 @@ export class CreateEnrollmentDto {
   @IsNotEmpty()
   examTypeId!: string;
 
-  @ApiPropertyOptional({ description: 'Kayıt yılı (varsayılan: mevcut yıl)', example: 2024 })
+  @ApiPropertyOptional({
+    description: 'Kayıt yılı (varsayılan: mevcut yıl)',
+    example: 2024,
+  })
   @IsOptional()
   @IsInt()
   @Min(2020)

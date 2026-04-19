@@ -89,7 +89,7 @@ describe('RankingsService', () => {
       expect(mockRedis.pipeline).not.toHaveBeenCalled();
     });
 
-    it('negatif puan (karantina cezası) da pipeline\'a eklenmeli', async () => {
+    it("negatif puan (karantina cezası) da pipeline'a eklenmeli", async () => {
       const pipeline = makePipelineMock();
       mockRedis.pipeline.mockReturnValue(pipeline);
 
@@ -107,10 +107,14 @@ describe('RankingsService', () => {
   // ─── getLeaderboard ────────────────────────────────────────────────────────────
 
   describe('getLeaderboard', () => {
-    it('Redis\'ten veri gelmezse boş liste dönmeli', async () => {
+    it("Redis'ten veri gelmezse boş liste dönmeli", async () => {
       mockRedis.zrevrange.mockResolvedValue([]);
 
-      const result = await service.getLeaderboard(RankingPeriod.WEEKLY, EXAM_TYPE_ID, 1);
+      const result = await service.getLeaderboard(
+        RankingPeriod.WEEKLY,
+        EXAM_TYPE_ID,
+        1,
+      );
 
       expect(result.data).toEqual([]);
       expect(result.total).toBe(0);
@@ -124,11 +128,23 @@ describe('RankingsService', () => {
         { id: 'user-2', displayName: 'Veli', avatar: null },
       ]);
 
-      const result = await service.getLeaderboard(RankingPeriod.WEEKLY, EXAM_TYPE_ID, 1);
+      const result = await service.getLeaderboard(
+        RankingPeriod.WEEKLY,
+        EXAM_TYPE_ID,
+        1,
+      );
 
       expect(result.data).toHaveLength(2);
-      expect(result.data[0]).toMatchObject({ rank: 1, score: 150, displayName: 'Ali' });
-      expect(result.data[1]).toMatchObject({ rank: 2, score: 120, displayName: 'Veli' });
+      expect(result.data[0]).toMatchObject({
+        rank: 1,
+        score: 150,
+        displayName: 'Ali',
+      });
+      expect(result.data[1]).toMatchObject({
+        rank: 2,
+        score: 120,
+        displayName: 'Veli',
+      });
     });
 
     it('sayfa 2 için doğru rank offset hesaplanmalı', async () => {
@@ -138,7 +154,11 @@ describe('RankingsService', () => {
         { id: 'user-11', displayName: 'Kişi 11', avatar: null },
       ]);
 
-      const result = await service.getLeaderboard(RankingPeriod.WEEKLY, EXAM_TYPE_ID, 2);
+      const result = await service.getLeaderboard(
+        RankingPeriod.WEEKLY,
+        EXAM_TYPE_ID,
+        2,
+      );
 
       expect(result.data[0]?.rank).toBe(11);
     });
@@ -147,7 +167,7 @@ describe('RankingsService', () => {
   // ─── getMyRanking ──────────────────────────────────────────────────────────────
 
   describe('getMyRanking', () => {
-    it('Redis\'te kayıt varsa rank ve score dönmeli', async () => {
+    it("Redis'te kayıt varsa rank ve score dönmeli", async () => {
       mockRedis.zrevrank.mockResolvedValue(2); // 0-indexed → rank=3
       mockRedis.zscore.mockResolvedValue('175.5');
 
@@ -157,7 +177,7 @@ describe('RankingsService', () => {
       expect(result.score).toBe(175.5);
     });
 
-    it('Redis\'te kayıt yoksa rank=null, score=0 dönmeli', async () => {
+    it("Redis'te kayıt yoksa rank=null, score=0 dönmeli", async () => {
       mockRedis.zrevrank.mockResolvedValue(null);
       mockRedis.zscore.mockResolvedValue(null);
 
@@ -173,14 +193,35 @@ describe('RankingsService', () => {
   describe('getTop3', () => {
     it('aylık ilk 3 burs adayını 10.000 TL ile dönmeli', async () => {
       mockRedis.zrevrange.mockResolvedValue([
-        'user-1', '300',
-        'user-2', '250',
-        'user-3', '200',
+        'user-1',
+        '300',
+        'user-2',
+        '250',
+        'user-3',
+        '200',
       ]);
       mockPrisma.user.findMany.mockResolvedValue([
-        { id: 'user-1', displayName: 'Ali', avatar: null, city: 'Ankara', school: 'ODTÜ' },
-        { id: 'user-2', displayName: 'Veli', avatar: null, city: null, school: null },
-        { id: 'user-3', displayName: 'Mehmet', avatar: null, city: null, school: null },
+        {
+          id: 'user-1',
+          displayName: 'Ali',
+          avatar: null,
+          city: 'Ankara',
+          school: 'ODTÜ',
+        },
+        {
+          id: 'user-2',
+          displayName: 'Veli',
+          avatar: null,
+          city: null,
+          school: null,
+        },
+        {
+          id: 'user-3',
+          displayName: 'Mehmet',
+          avatar: null,
+          city: null,
+          school: null,
+        },
       ]);
 
       const result = await service.getTop3(EXAM_TYPE_ID);
@@ -203,11 +244,14 @@ describe('RankingsService', () => {
   // ─── takeSnapshot ──────────────────────────────────────────────────────────────
 
   describe('takeSnapshot', () => {
-    it('Redis verisini DB\'ye upsert etmeli', async () => {
+    it("Redis verisini DB'ye upsert etmeli", async () => {
       mockRedis.zrevrange.mockResolvedValue(['user-1', '100', 'user-2', '80']);
       mockPrisma.rankingSnapshot.upsert.mockResolvedValue({});
 
-      const result = await service.takeSnapshot(EXAM_TYPE_ID, RankingPeriod.DAILY);
+      const result = await service.takeSnapshot(
+        EXAM_TYPE_ID,
+        RankingPeriod.DAILY,
+      );
 
       expect(result.written).toBe(2);
       expect(mockPrisma.rankingSnapshot.upsert).toHaveBeenCalledTimes(2);

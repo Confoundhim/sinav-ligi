@@ -14,7 +14,11 @@ function makeHash(str: string): string {
   return crypto.createHmac('sha256', MERCHANT_KEY).update(str).digest('base64');
 }
 
-function makeCallbackHash(merchantOid: string, status: string, totalAmount: string): string {
+function makeCallbackHash(
+  merchantOid: string,
+  status: string,
+  totalAmount: string,
+): string {
   return makeHash(merchantOid + MERCHANT_SALT + status + totalAmount);
 }
 
@@ -84,11 +88,20 @@ describe('PaymentsService', () => {
       const totalAmount = '25000';
       const validHash = makeCallbackHash(merchantOid, status, totalAmount);
 
-      expect(service.verifyCallbackHash(merchantOid, status, totalAmount, validHash)).toBe(true);
+      expect(
+        service.verifyCallbackHash(merchantOid, status, totalAmount, validHash),
+      ).toBe(true);
     });
 
     it('yanlış hash reddedilmeli', () => {
-      expect(service.verifyCallbackHash('order-123', 'success', '25000', 'yanlis-hash')).toBe(false);
+      expect(
+        service.verifyCallbackHash(
+          'order-123',
+          'success',
+          '25000',
+          'yanlis-hash',
+        ),
+      ).toBe(false);
     });
 
     it('status değişince hash geçersiz olmalı', () => {
@@ -96,7 +109,14 @@ describe('PaymentsService', () => {
       const totalAmount = '25000';
       const validHash = makeCallbackHash(merchantOid, 'success', totalAmount);
 
-      expect(service.verifyCallbackHash(merchantOid, 'failed', totalAmount, validHash)).toBe(false);
+      expect(
+        service.verifyCallbackHash(
+          merchantOid,
+          'failed',
+          totalAmount,
+          validHash,
+        ),
+      ).toBe(false);
     });
 
     it('tutar değişince hash geçersiz olmalı', () => {
@@ -104,7 +124,9 @@ describe('PaymentsService', () => {
       const status = 'success';
       const validHash = makeCallbackHash(merchantOid, status, '25000');
 
-      expect(service.verifyCallbackHash(merchantOid, status, '30000', validHash)).toBe(false);
+      expect(
+        service.verifyCallbackHash(merchantOid, status, '30000', validHash),
+      ).toBe(false);
     });
   });
 
@@ -128,7 +150,12 @@ describe('PaymentsService', () => {
 
       mockPrisma.payment.findUnique.mockResolvedValueOnce(null);
 
-      const result = await service.handleCallback({ merchant_oid: merchantOid, status, total_amount: totalAmount, hash });
+      const result = await service.handleCallback({
+        merchant_oid: merchantOid,
+        status,
+        total_amount: totalAmount,
+        hash,
+      });
       expect(result).toBe('OK');
     });
 
@@ -147,7 +174,12 @@ describe('PaymentsService', () => {
         metadata: null,
       });
 
-      const result = await service.handleCallback({ merchant_oid: merchantOid, status, total_amount: totalAmount, hash });
+      const result = await service.handleCallback({
+        merchant_oid: merchantOid,
+        status,
+        total_amount: totalAmount,
+        hash,
+      });
       expect(result).toBe('OK');
       expect(mockPrisma.payment.update).not.toHaveBeenCalled();
     });
@@ -168,10 +200,21 @@ describe('PaymentsService', () => {
       });
 
       mockPrisma.payment.update.mockResolvedValueOnce({});
-      mockPrisma.wallet.upsert.mockResolvedValueOnce({ id: 'wallet-1', balance: 0 });
-      mockPrisma.$transaction.mockResolvedValueOnce([{ id: 'wallet-1', balance: 250 }, {}]);
+      mockPrisma.wallet.upsert.mockResolvedValueOnce({
+        id: 'wallet-1',
+        balance: 0,
+      });
+      mockPrisma.$transaction.mockResolvedValueOnce([
+        { id: 'wallet-1', balance: 250 },
+        {},
+      ]);
 
-      const result = await service.handleCallback({ merchant_oid: merchantOid, status, total_amount: totalAmount, hash });
+      const result = await service.handleCallback({
+        merchant_oid: merchantOid,
+        status,
+        total_amount: totalAmount,
+        hash,
+      });
 
       expect(result).toBe('OK');
       expect(mockPrisma.payment.update).toHaveBeenCalledWith(
@@ -197,7 +240,12 @@ describe('PaymentsService', () => {
 
       mockPrisma.payment.update.mockResolvedValueOnce({});
 
-      const result = await service.handleCallback({ merchant_oid: merchantOid, status, total_amount: totalAmount, hash });
+      const result = await service.handleCallback({
+        merchant_oid: merchantOid,
+        status,
+        total_amount: totalAmount,
+        hash,
+      });
 
       expect(result).toBe('OK');
       expect(mockPrisma.payment.update).toHaveBeenCalledWith(
@@ -213,7 +261,9 @@ describe('PaymentsService', () => {
         'order-123',
         'test@example.com',
         '25000',
-        Buffer.from(JSON.stringify([['Test', '25000', '1']])).toString('base64'),
+        Buffer.from(JSON.stringify([['Test', '25000', '1']])).toString(
+          'base64',
+        ),
         '0',
         '0',
         'TL',

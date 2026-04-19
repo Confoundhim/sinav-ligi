@@ -170,14 +170,20 @@ export class ExamsService {
     }
 
     if (distribution.length === 0) {
-      throw new BadRequestException('Bu sınav türü için soru dağılımı tanımlanmamış');
+      throw new BadRequestException(
+        'Bu sınav türü için soru dağılımı tanımlanmamış',
+      );
     }
 
     // Her konu tipinden soru seç
     const allQuestionIds: string[] = [];
     for (const dist of distribution) {
       try {
-        const ids = await this.selectQuestions([dist.typeId], dist.count, userId);
+        const ids = await this.selectQuestions(
+          [dist.typeId],
+          dist.count,
+          userId,
+        );
         allQuestionIds.push(...ids);
       } catch {
         // Yeterli soru yoksa atla, eksik kalsın (uyarı loglanabilir)
@@ -243,8 +249,10 @@ export class ExamsService {
     });
 
     if (!session) throw new NotFoundException('Sınav bulunamadı');
-    if (session.userId !== userId) throw new ForbiddenException('Bu sınava erişim yetkiniz yok');
-    if (session.finishedAt) throw new BadRequestException('Sınav zaten tamamlandı');
+    if (session.userId !== userId)
+      throw new ForbiddenException('Bu sınava erişim yetkiniz yok');
+    if (session.finishedAt)
+      throw new BadRequestException('Sınav zaten tamamlandı');
 
     return {
       examSessionId: session.id,
@@ -271,8 +279,10 @@ export class ExamsService {
     });
 
     if (!session) throw new NotFoundException('Sınav bulunamadı');
-    if (session.userId !== userId) throw new ForbiddenException('Bu sınava erişim yetkiniz yok');
-    if (session.finishedAt) throw new BadRequestException('Sınav tamamlanmış, cevap gönderilemez');
+    if (session.userId !== userId)
+      throw new ForbiddenException('Bu sınava erişim yetkiniz yok');
+    if (session.finishedAt)
+      throw new BadRequestException('Sınav tamamlanmış, cevap gönderilemez');
 
     const sq = session.questions[0];
     if (!sq) throw new NotFoundException(`${dto.order}. soru bulunamadı`);
@@ -287,7 +297,9 @@ export class ExamsService {
     const isCorrect = question.correctAnswer === dto.answer;
 
     await this.prisma.examSessionQuestion.update({
-      where: { examSessionId_order: { examSessionId: examId, order: dto.order } },
+      where: {
+        examSessionId_order: { examSessionId: examId, order: dto.order },
+      },
       data: {
         userAnswer: dto.answer,
         isCorrect,
@@ -308,12 +320,20 @@ export class ExamsService {
     });
 
     if (!session) throw new NotFoundException('Sınav bulunamadı');
-    if (session.userId !== userId) throw new ForbiddenException('Bu sınava erişim yetkiniz yok');
-    if (session.finishedAt) throw new BadRequestException('Sınav zaten tamamlandı');
+    if (session.userId !== userId)
+      throw new ForbiddenException('Bu sınava erişim yetkiniz yok');
+    if (session.finishedAt)
+      throw new BadRequestException('Sınav zaten tamamlandı');
 
-    const correctCount = session.questions.filter((q) => q.isCorrect === true).length;
-    const wrongCount = session.questions.filter((q) => q.isCorrect === false && q.userAnswer !== null).length;
-    const emptyCount = session.questions.filter((q) => q.userAnswer === null).length;
+    const correctCount = session.questions.filter(
+      (q) => q.isCorrect === true,
+    ).length;
+    const wrongCount = session.questions.filter(
+      (q) => q.isCorrect === false && q.userAnswer !== null,
+    ).length;
+    const emptyCount = session.questions.filter(
+      (q) => q.userAnswer === null,
+    ).length;
     const score = calcScore(correctCount, wrongCount);
 
     const startMs = session.startedAt.getTime();
@@ -397,8 +417,10 @@ export class ExamsService {
     });
 
     if (!session) throw new NotFoundException('Sınav bulunamadı');
-    if (session.userId !== userId) throw new ForbiddenException('Bu sonuçlara erişim yetkiniz yok');
-    if (!session.finishedAt) throw new BadRequestException('Sınav henüz tamamlanmadı');
+    if (session.userId !== userId)
+      throw new ForbiddenException('Bu sonuçlara erişim yetkiniz yok');
+    if (!session.finishedAt)
+      throw new BadRequestException('Sınav henüz tamamlanmadı');
 
     return session;
   }
@@ -407,7 +429,11 @@ export class ExamsService {
 
   async getShadowHistory(userId: string) {
     return this.prisma.examSession.findMany({
-      where: { userId, type: ExamSessionType.SHADOW, finishedAt: { not: null } },
+      where: {
+        userId,
+        type: ExamSessionType.SHADOW,
+        finishedAt: { not: null },
+      },
       orderBy: { startedAt: 'desc' },
       take: 20,
       select: {
@@ -448,10 +474,16 @@ export class ExamsService {
     });
 
     if (sessions.length < 2) {
-      return { message: 'Karşılaştırma için en az 2 gölge rakip sınavı gereklidir', sessions };
+      return {
+        message: 'Karşılaştırma için en az 2 gölge rakip sınavı gereklidir',
+        sessions,
+      };
     }
 
-    const [prev, curr] = [sessions[sessions.length - 2]!, sessions[sessions.length - 1]!];
+    const [prev, curr] = [
+      sessions[sessions.length - 2]!,
+      sessions[sessions.length - 1]!,
+    ];
     const scoreDiff = Number(curr.score) - Number(prev.score);
 
     return {
@@ -498,7 +530,8 @@ export class ExamsService {
     });
 
     if (!item) throw new NotFoundException('Karantina öğesi bulunamadı');
-    if (item.userId !== userId) throw new ForbiddenException('Erişim yetkiniz yok');
+    if (item.userId !== userId)
+      throw new ForbiddenException('Erişim yetkiniz yok');
     if (item.status !== QuarantineStatus.ACTIVE)
       throw new BadRequestException('Bu karantina öğesi artık aktif değil');
 
@@ -532,7 +565,10 @@ export class ExamsService {
     return {
       quarantineId,
       question: nextQuestion,
-      progress: { correct: correctAttempts, required: this.QUARANTINE_RESCUE_THRESHOLD },
+      progress: {
+        correct: correctAttempts,
+        required: this.QUARANTINE_RESCUE_THRESHOLD,
+      },
     };
   }
 
@@ -549,12 +585,15 @@ export class ExamsService {
     });
 
     if (!item) throw new NotFoundException('Karantina öğesi bulunamadı');
-    if (item.userId !== userId) throw new ForbiddenException('Erişim yetkiniz yok');
+    if (item.userId !== userId)
+      throw new ForbiddenException('Erişim yetkiniz yok');
     if (item.status !== QuarantineStatus.ACTIVE)
       throw new BadRequestException('Bu karantina öğesi aktif değil');
 
     // Aynı soru daha önce denendi mi?
-    const alreadyAttempted = item.attempts.some((a) => a.attemptQuestionId === dto.questionId);
+    const alreadyAttempted = item.attempts.some(
+      (a) => a.attemptQuestionId === dto.questionId,
+    );
     if (alreadyAttempted)
       throw new ConflictException('Bu soru zaten bu karantina için denendi');
 
@@ -591,7 +630,10 @@ export class ExamsService {
     return {
       isCorrect,
       rescued: isRescued,
-      progress: { correct: correctCountAfter, required: this.QUARANTINE_RESCUE_THRESHOLD },
+      progress: {
+        correct: correctCountAfter,
+        required: this.QUARANTINE_RESCUE_THRESHOLD,
+      },
     };
   }
 

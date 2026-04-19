@@ -20,6 +20,8 @@ import { WalletModule } from './wallet/wallet.module';
 import { DuelsModule } from './duels/duels.module';
 import { ExamsModule } from './exams/exams.module';
 import { WeeklyExamModule } from './weekly-exam/weekly-exam.module';
+import { VideosModule } from './videos/videos.module';
+import { FriendsModule } from './friends/friends.module';
 
 @Module({
   imports: [
@@ -67,6 +69,8 @@ import { WeeklyExamModule } from './weekly-exam/weekly-exam.module';
     AchievementsModule,
     EnrollmentsModule,
     WeeklyExamModule,
+    VideosModule,
+    FriendsModule,
   ],
 })
 export class AppModule {}

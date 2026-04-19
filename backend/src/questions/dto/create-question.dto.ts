@@ -59,7 +59,11 @@ export class CreateQuestionDto {
   @IsNotEmpty()
   questionTypeId!: string;
 
-  @ApiPropertyOptional({ description: 'Zorluk derecesi (1=kolay, 5=zor)', minimum: 1, maximum: 5 })
+  @ApiPropertyOptional({
+    description: 'Zorluk derecesi (1=kolay, 5=zor)',
+    minimum: 1,
+    maximum: 5,
+  })
   @IsOptional()
   @IsInt()
   @Min(1)

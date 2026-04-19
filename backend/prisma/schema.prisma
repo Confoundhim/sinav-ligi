@@ -81,6 +81,18 @@ enum CheatLogType {
   OTHER
 }
 
+enum AchievementPrivacy {
+  PUBLIC
+  FRIENDS
+  PRIVATE
+}
+
+enum ThemePreference {
+  DARK
+  LIGHT
+  SYSTEM
+}
+
 model User {
   id                     String                 @id @default(cuid())
   email                  String                 @unique
@@ -95,6 +107,7 @@ model User {
   createdAt              DateTime               @default(now())
   updatedAt              DateTime               @updatedAt
   profile                UserProfile?
+  settings               UserSettings?
   authSessions           AuthSession[]
   enrollments            Enrollment[]
   examSessions           ExamSession[]
@@ -130,6 +143,19 @@ model UserProfile {
   studyStartDate DateTime?
   bio            String?  @db.Text
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserSettings {
+  userId                String             @id
+  pushNotifications     Boolean            @default(true)
+  emailNotifications    Boolean            @default(true)
+  nightModeEnabled      Boolean            @default(true)
+  nightModeNotifications Boolean           @default(true)
+  achievementPrivacy    AchievementPrivacy @default(PUBLIC)
+  theme                 ThemePreference    @default(DARK)
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  user                  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model AuthSession {

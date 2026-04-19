@@ -18,9 +18,7 @@ async function bootstrap() {
   app.useLogger(logger);
   await prismaService.enableShutdownHooks(app);
   app.useGlobalFilters(new HttpExceptionFilter());
-  app.useGlobalPipes(
-    new ValidationPipe({ whitelist: true, transform: true }),
-  );
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.use(helmet());
   app.enableCors({
     origin: corsOrigins,

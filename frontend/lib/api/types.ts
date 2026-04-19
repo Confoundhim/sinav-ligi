@@ -32,6 +32,47 @@ export interface RegisterRequest {
   examTypeId: string;
 }
 
+// ─── Settings ─────────────────────────────────────────────────────────────────
+
+export type AchievementPrivacy = "PUBLIC" | "FRIENDS" | "PRIVATE";
+export type ThemePreference = "DARK" | "LIGHT" | "SYSTEM";
+
+export interface UserSettings {
+  userId: string;
+  pushNotifications: boolean;
+  emailNotifications: boolean;
+  nightModeEnabled: boolean;
+  nightModeNotifications: boolean;
+  achievementPrivacy: AchievementPrivacy;
+  theme: ThemePreference;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateSettingsRequest {
+  pushNotifications?: boolean;
+  emailNotifications?: boolean;
+  nightModeEnabled?: boolean;
+  nightModeNotifications?: boolean;
+  achievementPrivacy?: AchievementPrivacy;
+  theme?: ThemePreference;
+}
+
+export interface NightModeStatus {
+  isActive: boolean;
+  isNightShiftHours: boolean;
+  startHour: number;
+  endHour: number;
+  currentHour: number;
+  bonusMultiplier: number;
+  message: string;
+}
+
+export interface NightModePreferences {
+  nightModeEnabled: boolean;
+  nightModeNotifications: boolean;
+}
+
 // ─── Curriculum ───────────────────────────────────────────────────────────────
 
 export interface ExamType {

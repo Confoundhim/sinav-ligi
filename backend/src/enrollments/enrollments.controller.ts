@@ -49,7 +49,9 @@ export class EnrollmentsController {
   @Get('me')
   @ApiOperation({ summary: 'Kullanıcının sınav kayıtları' })
   @ApiOkResponse({ description: 'Tüm enrollment kayıtları' })
-  async getMyEnrollments(@CurrentUser() user: JwtPayload): Promise<Enrollment[]> {
+  async getMyEnrollments(
+    @CurrentUser() user: JwtPayload,
+  ): Promise<Enrollment[]> {
     return this.enrollmentsService.getUserEnrollments(user.sub);
   }
 }

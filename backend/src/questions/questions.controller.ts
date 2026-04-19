@@ -91,7 +91,9 @@ export class CurriculumController {
 
   @Public()
   @Get('subjects/:id/question-types')
-  @ApiOperation({ summary: 'Derse göre soru tipleri (video ve soru sayısıyla)' })
+  @ApiOperation({
+    summary: 'Derse göre soru tipleri (video ve soru sayısıyla)',
+  })
   getQuestionTypesBySubject(@Param('id') id: string) {
     return this.questionsService.getQuestionTypesBySubject(id);
   }

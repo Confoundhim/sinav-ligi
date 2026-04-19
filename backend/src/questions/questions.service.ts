@@ -5,7 +5,10 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../common/database/prisma.service';
-import { CreateQuestionDto, QuestionContentDto } from './dto/create-question.dto';
+import {
+  CreateQuestionDto,
+  QuestionContentDto,
+} from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { QuestionFilterDto } from './dto/question-filter.dto';
 
@@ -17,7 +20,9 @@ export class QuestionsService {
 
   // ─── Levenshtein Similarity ───────────────────────────────────────────────
 
-  private extractText(content: QuestionContentDto | Record<string, unknown>): string {
+  private extractText(
+    content: QuestionContentDto | Record<string, unknown>,
+  ): string {
     const c = content as Record<string, unknown>;
     const text = typeof c?.text === 'string' ? c.text : '';
     const choices = c?.choices as Record<string, unknown> | undefined;
@@ -42,7 +47,11 @@ export class QuestionsService {
         curr[i] =
           b[j - 1] === a[i - 1]
             ? (prev[i - 1] as number)
-            : Math.min((prev[i - 1] as number) + 1, (curr[i - 1] as number) + 1, (prev[i] as number) + 1);
+            : Math.min(
+                (prev[i - 1] as number) + 1,
+                (curr[i - 1] as number) + 1,
+                (prev[i] as number) + 1,
+              );
       }
       prev.splice(0, prev.length, ...curr);
     }
@@ -74,7 +83,9 @@ export class QuestionsService {
     });
 
     for (const q of existing) {
-      const existingText = this.extractText(q.content as Record<string, unknown>);
+      const existingText = this.extractText(
+        q.content as Record<string, unknown>,
+      );
       const score = this.similarity(text, existingText);
       if (score >= this.SIMILARITY_THRESHOLD) {
         throw new ConflictException(
@@ -92,7 +103,9 @@ export class QuestionsService {
     });
     if (!questionType) throw new NotFoundException('Soru tipi bulunamadı');
 
-    const text = this.extractText(dto.content as unknown as Record<string, unknown>);
+    const text = this.extractText(
+      dto.content as unknown as Record<string, unknown>,
+    );
     await this.checkSimilarity(text, dto.questionTypeId);
 
     return this.prisma.question.create({
@@ -124,7 +137,9 @@ export class QuestionsService {
           questionType: {
             select: {
               name: true,
-              subject: { select: { name: true, examType: { select: { name: true } } } },
+              subject: {
+                select: { name: true, examType: { select: { name: true } } },
+              },
             },
           },
         },
@@ -162,7 +177,9 @@ export class QuestionsService {
 
     if (dto.content && (dto.questionTypeId ?? question.questionTypeId)) {
       const targetTypeId = dto.questionTypeId ?? question.questionTypeId;
-      const text = this.extractText(dto.content as unknown as Record<string, unknown>);
+      const text = this.extractText(
+        dto.content as unknown as Record<string, unknown>,
+      );
       await this.checkSimilarity(text, targetTypeId, id);
     }
 
@@ -199,7 +216,9 @@ export class QuestionsService {
   }
 
   async getSubjectsByExamType(examTypeId: string) {
-    const examType = await this.prisma.examType.findUnique({ where: { id: examTypeId } });
+    const examType = await this.prisma.examType.findUnique({
+      where: { id: examTypeId },
+    });
     if (!examType) throw new NotFoundException('Sınav türü bulunamadı');
 
     return this.prisma.subject.findMany({
@@ -209,7 +228,9 @@ export class QuestionsService {
   }
 
   async getQuestionTypesBySubject(subjectId: string) {
-    const subject = await this.prisma.subject.findUnique({ where: { id: subjectId } });
+    const subject = await this.prisma.subject.findUnique({
+      where: { id: subjectId },
+    });
     if (!subject) throw new NotFoundException('Ders bulunamadı');
 
     return this.prisma.questionType.findMany({

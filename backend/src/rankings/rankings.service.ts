@@ -6,9 +6,9 @@ import { REDIS_CLIENT } from '../common/redis/redis.constants';
 
 // Puan sabit tanımları
 export const SCORE_RULES = {
-  EXAM_COMPLETION: 0,      // net puan kadar (dinamik)
+  EXAM_COMPLETION: 0, // net puan kadar (dinamik)
   SHADOW_RIVAL_WIN: 50,
-  DUEL_WIN: 0,             // bet_points kadar (dinamik)
+  DUEL_WIN: 0, // bet_points kadar (dinamik)
   QUARANTINE_CLEAR: 20,
   VIDEO_WATCH: 5,
   QUARANTINE_FAIL: -10,
@@ -40,7 +40,9 @@ export class RankingsService {
   }
 
   private getISOWeek(date: Date): number {
-    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const d = new Date(
+      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+    );
     const dayNum = d.getUTCDay() || 7;
     d.setUTCDate(d.getUTCDate() + 4 - dayNum);
     const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
@@ -163,11 +165,18 @@ export class RankingsService {
       });
     }
 
-    if (entries.length === 0) return { candidates: [], scholarshipAmount: 10000 };
+    if (entries.length === 0)
+      return { candidates: [], scholarshipAmount: 10000 };
 
     const users = await this.prisma.user.findMany({
       where: { id: { in: entries.map((e) => e.userId) } },
-      select: { id: true, displayName: true, avatar: true, city: true, school: true },
+      select: {
+        id: true,
+        displayName: true,
+        avatar: true,
+        city: true,
+        school: true,
+      },
     });
     const userMap = new Map(users.map((u) => [u.id, u]));
 
@@ -194,17 +203,15 @@ export class RankingsService {
     return { awards };
   }
 
-  async grantPrestige(
-    userId: string,
-    category: string,
-    period: string,
-  ) {
+  async grantPrestige(userId: string, category: string, period: string) {
     return this.prisma.prestigeAward.create({
       data: { userId, category, period },
     });
   }
 
-  async evaluateWeeklyPrestige(examTypeId: string): Promise<{ granted: number }> {
+  async evaluateWeeklyPrestige(
+    examTypeId: string,
+  ): Promise<{ granted: number }> {
     const weekKey = this.buildKey(examTypeId, RankingPeriod.WEEKLY);
     const raw = await this.redis.zrevrange(weekKey, 0, 0, 'WITHSCORES');
     if (raw.length < 2) return { granted: 0 };
@@ -243,7 +250,12 @@ export class RankingsService {
     period: RankingPeriod,
   ): Promise<{ written: number }> {
     const key = this.buildKey(examTypeId, period);
-    const raw = await this.redis.zrevrange(key, 0, this.MAX_RANK - 1, 'WITHSCORES');
+    const raw = await this.redis.zrevrange(
+      key,
+      0,
+      this.MAX_RANK - 1,
+      'WITHSCORES',
+    );
 
     const snapshotDate = new Date();
     snapshotDate.setHours(0, 0, 0, 0);

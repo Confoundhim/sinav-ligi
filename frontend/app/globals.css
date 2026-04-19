@@ -121,6 +121,41 @@
   --sidebar-ring: rgb(201 168 76 / 0.45);
 }
 
+/* Night Mode Theme - Deeper Anthracite */
+.night-mode-active {
+  --background: #181716;
+  --foreground: #e8e4dc;
+  --card: #1f1e1d;
+  --card-foreground: #e8e4dc;
+  --popover: #1f1e1d;
+  --popover-foreground: #e8e4dc;
+  --primary: #8b9dc3;
+  --primary-foreground: #181716;
+  --secondary: #2a2928;
+  --secondary-foreground: #e8e4dc;
+  --muted: #252423;
+  --muted-foreground: #9a958d;
+  --accent: #6b8cae;
+  --accent-foreground: #181716;
+  --destructive: #a65d4d;
+  --border: rgb(232 228 220 / 0.08);
+  --input: rgb(232 228 220 / 0.05);
+  --ring: rgb(107 140 174 / 0.45);
+  --chart-1: #8b9dc3;
+  --chart-2: #6b8cae;
+  --chart-3: #e8e4dc;
+  --chart-4: #5a7a6a;
+  --chart-5: #7a8ba0;
+  --sidebar: #1a1918;
+  --sidebar-foreground: #e8e4dc;
+  --sidebar-primary: #8b9dc3;
+  --sidebar-primary-foreground: #181716;
+  --sidebar-accent: rgb(107 140 174 / 0.12);
+  --sidebar-accent-foreground: #e0dcd4;
+  --sidebar-border: rgb(232 228 220 / 0.06);
+  --sidebar-ring: rgb(107 140 174 / 0.35);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -140,6 +175,19 @@
       ),
       linear-gradient(180deg, #242220 0%, #1b1a19 100%);
   }
+  
+  /* Night Mode - Loş tema arka plan */
+  body.night-mode-active {
+    background-image:
+      radial-gradient(circle at top, rgb(107 140 174 / 0.10), transparent 32%),
+      radial-gradient(
+        circle at bottom right,
+        rgb(139 157 195 / 0.08),
+        transparent 28%
+      ),
+      linear-gradient(180deg, #1c1b1a 0%, #151413 100%);
+  }
+  
   html {
     @apply font-sans;
   }

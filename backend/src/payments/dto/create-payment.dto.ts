@@ -26,17 +26,24 @@ export class CreatePaymentDto {
   @IsNotEmpty()
   description!: string;
 
-  @ApiPropertyOptional({ description: 'Sınav türü ID (ENROLLMENT tipi için gerekli)' })
+  @ApiPropertyOptional({
+    description: 'Sınav türü ID (ENROLLMENT tipi için gerekli)',
+  })
   @IsOptional()
   @IsString()
   examTypeId?: string;
 
-  @ApiPropertyOptional({ description: 'Haftalık sınav ID (WEEKLY_EXAM tipi için gerekli)' })
+  @ApiPropertyOptional({
+    description: 'Haftalık sınav ID (WEEKLY_EXAM tipi için gerekli)',
+  })
   @IsOptional()
   @IsString()
   weeklyExamId?: string;
 
-  @ApiPropertyOptional({ description: 'Kayıt yılı (ENROLLMENT tipi için gerekli)', example: 2024 })
+  @ApiPropertyOptional({
+    description: 'Kayıt yılı (ENROLLMENT tipi için gerekli)',
+    example: 2024,
+  })
   @IsOptional()
   @IsNumber()
   year?: number;

@@ -6,7 +6,10 @@ import {
 } from '@nestjs/common';
 import { Enrollment } from '@prisma/client';
 import { PrismaService } from '../common/database/prisma.service';
-import { PaymentsService, PaytrTokenResult } from '../payments/payments.service';
+import {
+  PaymentsService,
+  PaytrTokenResult,
+} from '../payments/payments.service';
 import { PaymentType } from '@prisma/client';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 
@@ -59,12 +62,16 @@ export class EnrollmentsService {
     });
 
     if (existing) {
-      throw new ConflictException(`${year} yılı için bu sınava zaten kayıtlısınız.`);
+      throw new ConflictException(
+        `${year} yılı için bu sınava zaten kayıtlısınız.`,
+      );
     }
 
     const fee = Number(examType.registrationFee) || ENROLLMENT_FEE_TL;
 
-    this.logger.log(`Kayıt başlatılıyor: userId=${userId}, examTypeId=${dto.examTypeId}, yıl=${year}, ücret=${fee}`);
+    this.logger.log(
+      `Kayıt başlatılıyor: userId=${userId}, examTypeId=${dto.examTypeId}, yıl=${year}, ücret=${fee}`,
+    );
 
     return this.paymentsService.createPayment(userId, userEmail, userIp, {
       type: PaymentType.ENROLLMENT,

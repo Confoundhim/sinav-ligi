@@ -16,7 +16,13 @@ const mockQuestion = {
   questionTypeId: 'qt-1',
   content: {
     text: 'Aşağıdakilerden hangisi doğrudur?',
-    choices: { A: 'Seçenek A', B: 'Seçenek B', C: 'Seçenek C', D: 'Seçenek D', E: 'Seçenek E' },
+    choices: {
+      A: 'Seçenek A',
+      B: 'Seçenek B',
+      C: 'Seçenek C',
+      D: 'Seçenek D',
+      E: 'Seçenek E',
+    },
     images: [],
   },
   correctAnswer: 'A',
@@ -61,7 +67,13 @@ describe('QuestionsService', () => {
     const dto = {
       content: {
         text: 'Test sorusu metni burada yer almaktadır ve benzersizdir',
-        choices: { A: 'A seçeneği', B: 'B seçeneği', C: 'C seçeneği', D: 'D seçeneği', E: 'E seçeneği' },
+        choices: {
+          A: 'A seçeneği',
+          B: 'B seçeneği',
+          C: 'C seçeneği',
+          D: 'D seçeneği',
+          E: 'E seçeneği',
+        },
       },
       correctAnswer: 'A',
       explanation: 'Açıklama',
@@ -94,7 +106,13 @@ describe('QuestionsService', () => {
           id: 'q-existing',
           content: {
             text: 'Test sorusu metni burada yer almaktadır ve benzersizdir',
-            choices: { A: 'A seçeneği', B: 'B seçeneği', C: 'C seçeneği', D: 'D seçeneği', E: 'E seçeneği' },
+            choices: {
+              A: 'A seçeneği',
+              B: 'B seçeneği',
+              C: 'C seçeneği',
+              D: 'D seçeneği',
+              E: 'E seçeneği',
+            },
           },
         },
       ]);
@@ -125,14 +143,19 @@ describe('QuestionsService', () => {
 
     it('bulunamayan soru için NotFoundException fırlatmalı', async () => {
       mockPrisma.question.findUnique.mockResolvedValue(null);
-      await expect(service.findOne('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
   describe('remove', () => {
     it('soruyu soft delete yapmalı (isActive=false)', async () => {
       mockPrisma.question.findUnique.mockResolvedValue(mockQuestion);
-      mockPrisma.question.update.mockResolvedValue({ ...mockQuestion, isActive: false });
+      mockPrisma.question.update.mockResolvedValue({
+        ...mockQuestion,
+        isActive: false,
+      });
 
       await service.remove('q-1');
 
@@ -145,18 +168,16 @@ describe('QuestionsService', () => {
 
   describe('Levenshtein benzerlik', () => {
     it('tamamen farklı metinler için benzerlik düşük olmalı', () => {
-      const sim = (service as unknown as { similarity: (a: string, b: string) => number }).similarity(
-        'matematik cebir denklemi',
-        'türkçe dil bilgisi fiil',
-      );
+      const sim = (
+        service as unknown as { similarity: (a: string, b: string) => number }
+      ).similarity('matematik cebir denklemi', 'türkçe dil bilgisi fiil');
       expect(sim).toBeLessThan(0.5);
     });
 
     it('aynı metinler için benzerlik 1 olmalı', () => {
-      const sim = (service as unknown as { similarity: (a: string, b: string) => number }).similarity(
-        'aynı metin',
-        'aynı metin',
-      );
+      const sim = (
+        service as unknown as { similarity: (a: string, b: string) => number }
+      ).similarity('aynı metin', 'aynı metin');
       expect(sim).toBe(1);
     });
   });

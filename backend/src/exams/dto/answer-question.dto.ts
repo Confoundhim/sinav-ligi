@@ -9,7 +9,10 @@ export class AnswerQuestionDto {
   @Min(1)
   order!: number;
 
-  @ApiProperty({ enum: ['A', 'B', 'C', 'D', 'E'], description: 'Verilen cevap' })
+  @ApiProperty({
+    enum: ['A', 'B', 'C', 'D', 'E'],
+    description: 'Verilen cevap',
+  })
   @IsString()
   @IsIn(['A', 'B', 'C', 'D', 'E'])
   answer!: string;

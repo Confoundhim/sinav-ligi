@@ -18,7 +18,11 @@ export class LeaderboardQueryDto {
   @IsString()
   examTypeId?: string;
 
-  @ApiPropertyOptional({ default: 1, minimum: 1, description: 'Sayfa numarası' })
+  @ApiPropertyOptional({
+    default: 1,
+    minimum: 1,
+    description: 'Sayfa numarası',
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()

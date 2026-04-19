@@ -29,17 +29,15 @@ export class RankingsController {
 
   // GET /rankings/leaderboard?period=WEEKLY&examTypeId=X&page=1
   @Get('leaderboard')
-  @ApiOperation({ summary: 'Sıralama tablosu (günlük/haftalık/aylık) — top 100, sayfalı' })
+  @ApiOperation({
+    summary: 'Sıralama tablosu (günlük/haftalık/aylık) — top 100, sayfalı',
+  })
   @ApiOkResponse({ description: 'Sıralama listesi' })
   getLeaderboard(
     @Query() query: LeaderboardQueryDto,
     @CurrentUser() _user: JwtPayload,
   ) {
-    const {
-      period = RankingPeriod.WEEKLY,
-      examTypeId = '',
-      page = 1,
-    } = query;
+    const { period = RankingPeriod.WEEKLY, examTypeId = '', page = 1 } = query;
     return this.rankingsService.getLeaderboard(period, examTypeId, page);
   }
 
@@ -53,7 +51,11 @@ export class RankingsController {
     @Query('period') period: RankingPeriod = RankingPeriod.WEEKLY,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.rankingsService.getMyRanking(user.sub, examTypeId ?? '', period);
+    return this.rankingsService.getMyRanking(
+      user.sub,
+      examTypeId ?? '',
+      period,
+    );
   }
 
   // GET /rankings/top3
@@ -85,7 +87,7 @@ export class RankingsController {
   @Post('snapshot')
   @HttpCode(HttpStatus.OK)
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Admin: Anlık sıralamayı DB\'ye yaz (snapshot)' })
+  @ApiOperation({ summary: "Admin: Anlık sıralamayı DB'ye yaz (snapshot)" })
   takeSnapshot(
     @Body('examTypeId') examTypeId: string,
     @Body('period') period: RankingPeriod,
@@ -98,9 +100,7 @@ export class RankingsController {
   @HttpCode(HttpStatus.OK)
   @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Admin: Haftalık prestij ödülünü değerlendir' })
-  evaluatePrestige(
-    @Body('examTypeId') examTypeId: string,
-  ) {
+  evaluatePrestige(@Body('examTypeId') examTypeId: string) {
     return this.rankingsService.evaluateWeeklyPrestige(examTypeId);
   }
 }

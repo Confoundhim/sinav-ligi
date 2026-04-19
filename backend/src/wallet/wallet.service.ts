@@ -4,7 +4,11 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { Wallet, WalletTransaction, WalletTransactionType } from '@prisma/client';
+import {
+  Wallet,
+  WalletTransaction,
+  WalletTransactionType,
+} from '@prisma/client';
 import { PrismaService } from '../common/database/prisma.service';
 
 export interface WalletWithTransactions extends Wallet {
@@ -31,7 +35,9 @@ export class WalletService {
   /**
    * Kullanıcının cüzdanını ve işlem geçmişini getirir.
    */
-  async getWalletWithTransactions(userId: string): Promise<Wallet & { transactions: WalletTransaction[] }> {
+  async getWalletWithTransactions(
+    userId: string,
+  ): Promise<Wallet & { transactions: WalletTransaction[] }> {
     const wallet = await this.prisma.wallet.findUnique({
       where: { userId },
       include: {
@@ -108,7 +114,9 @@ export class WalletService {
       }),
     ]);
 
-    this.logger.log(`Cüzdandan harcama: userId=${userId}, tutar=${amount}, tip=${type}`);
+    this.logger.log(
+      `Cüzdandan harcama: userId=${userId}, tutar=${amount}, tip=${type}`,
+    );
     return updatedWallet;
   }
 
@@ -123,7 +131,7 @@ export class WalletService {
     referenceId?: string,
   ): Promise<Wallet> {
     if (amount <= 0) {
-      throw new BadRequestException('Tutar 0\'dan büyük olmalı.');
+      throw new BadRequestException("Tutar 0'dan büyük olmalı.");
     }
 
     const wallet = await this.getOrCreateWallet(userId);

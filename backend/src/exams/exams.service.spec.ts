@@ -20,7 +20,9 @@ const mockExamType = {
     {
       id: 'sub-1',
       name: 'Türkçe',
-      questionTypes: [{ id: 'qt-1', name: 'Dil Bilgisi', questionCount: 5, sortOrder: 1 }],
+      questionTypes: [
+        { id: 'qt-1', name: 'Dil Bilgisi', questionCount: 5, sortOrder: 1 },
+      ],
     },
   ],
 };
@@ -28,7 +30,10 @@ const mockExamType = {
 const makeQuestion = (id: string, typeId = 'qt-1') => ({
   id,
   questionTypeId: typeId,
-  content: { text: `Soru ${id}`, choices: { A: 'A', B: 'B', C: 'C', D: 'D', E: 'E' } },
+  content: {
+    text: `Soru ${id}`,
+    choices: { A: 'A', B: 'B', C: 'C', D: 'D', E: 'E' },
+  },
   correctAnswer: 'A',
   usageCount: 0,
 });
@@ -46,9 +51,27 @@ const makeSession = (overrides = {}) => ({
   emptyCount: 0,
   score: 0,
   questions: [
-    { order: 1, questionId: 'q-1', userAnswer: null, isCorrect: null, answeredAt: null },
-    { order: 2, questionId: 'q-2', userAnswer: null, isCorrect: null, answeredAt: null },
-    { order: 3, questionId: 'q-3', userAnswer: null, isCorrect: null, answeredAt: null },
+    {
+      order: 1,
+      questionId: 'q-1',
+      userAnswer: null,
+      isCorrect: null,
+      answeredAt: null,
+    },
+    {
+      order: 2,
+      questionId: 'q-2',
+      userAnswer: null,
+      isCorrect: null,
+      answeredAt: null,
+    },
+    {
+      order: 3,
+      questionId: 'q-3',
+      userAnswer: null,
+      isCorrect: null,
+      answeredAt: null,
+    },
   ],
   ...overrides,
 });
@@ -56,7 +79,11 @@ const makeSession = (overrides = {}) => ({
 const mockPrisma = {
   examType: { findUnique: jest.fn() },
   questionType: { findMany: jest.fn() },
-  question: { findMany: jest.fn(), findUnique: jest.fn(), updateMany: jest.fn() },
+  question: {
+    findMany: jest.fn(),
+    findUnique: jest.fn(),
+    updateMany: jest.fn(),
+  },
   examSessionQuestion: {
     findMany: jest.fn(),
     createMany: jest.fn().mockResolvedValue({ count: 0 }),
@@ -99,17 +126,26 @@ describe('ExamsService', () => {
   // ─── Özel Sınav ──────────────────────────────────────────────────────────
 
   describe('createCustomExam', () => {
-    const dto = { examTypeId: EXAM_TYPE_ID, questionTypeIds: ['qt-1'], questionCount: 3 };
+    const dto = {
+      examTypeId: EXAM_TYPE_ID,
+      questionTypeIds: ['qt-1'],
+      questionCount: 3,
+    };
 
     it('yeterli soru varsa sınav oluşturmalı', async () => {
       mockPrisma.examType.findUnique.mockResolvedValue(mockExamType);
       mockPrisma.questionType.findMany.mockResolvedValue([{ id: 'qt-1' }]);
       mockPrisma.examSessionQuestion.findMany.mockResolvedValue([]);
       mockPrisma.question.findMany
-        .mockResolvedValueOnce([makeQuestion('q-1'), makeQuestion('q-2'), makeQuestion('q-3')])
+        .mockResolvedValueOnce([
+          makeQuestion('q-1'),
+          makeQuestion('q-2'),
+          makeQuestion('q-3'),
+        ])
         .mockResolvedValueOnce([]);
-      mockPrisma.$transaction.mockImplementation(async (fn: (tx: typeof mockPrisma) => Promise<unknown>) =>
-        fn(mockPrisma),
+      mockPrisma.$transaction.mockImplementation(
+        async (fn: (tx: typeof mockPrisma) => Promise<unknown>) =>
+          fn(mockPrisma),
       );
       mockPrisma.examSession.create.mockResolvedValue({ id: EXAM_ID });
       mockPrisma.examSessionQuestion.update = jest.fn();
@@ -120,7 +156,9 @@ describe('ExamsService', () => {
 
     it('geçersiz sınav türü için NotFoundException fırlatmalı', async () => {
       mockPrisma.examType.findUnique.mockResolvedValue(null);
-      await expect(service.createCustomExam(dto, USER_ID)).rejects.toThrow(NotFoundException);
+      await expect(service.createCustomExam(dto, USER_ID)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('yeterli soru yoksa BadRequestException fırlatmalı', async () => {
@@ -131,7 +169,9 @@ describe('ExamsService', () => {
         .mockResolvedValueOnce([makeQuestion('q-1')]) // yalnızca 1 soru var
         .mockResolvedValueOnce([]);
 
-      await expect(service.createCustomExam(dto, USER_ID)).rejects.toThrow(BadRequestException);
+      await expect(service.createCustomExam(dto, USER_ID)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -165,7 +205,9 @@ describe('ExamsService', () => {
     });
 
     it('başkasının sınavına erişimde ForbiddenException fırlatmalı', async () => {
-      mockPrisma.examSession.findUnique.mockResolvedValue(makeSession({ userId: 'other-user' }));
+      mockPrisma.examSession.findUnique.mockResolvedValue(
+        makeSession({ userId: 'other-user' }),
+      );
 
       await expect(
         service.answerQuestion(EXAM_ID, { order: 1, answer: 'A' }, USER_ID),
@@ -189,14 +231,33 @@ describe('ExamsService', () => {
     it('KPSS net puanını doğru hesaplamalı (2 doğru, 1 yanlış = 2 - 0.25 = 1.75)', async () => {
       const sessionWithAnswers = makeSession({
         questions: [
-          { order: 1, questionId: 'q-1', userAnswer: 'A', isCorrect: true, answeredAt: new Date() },
-          { order: 2, questionId: 'q-2', userAnswer: 'B', isCorrect: true, answeredAt: new Date() },
-          { order: 3, questionId: 'q-3', userAnswer: 'C', isCorrect: false, answeredAt: new Date() },
+          {
+            order: 1,
+            questionId: 'q-1',
+            userAnswer: 'A',
+            isCorrect: true,
+            answeredAt: new Date(),
+          },
+          {
+            order: 2,
+            questionId: 'q-2',
+            userAnswer: 'B',
+            isCorrect: true,
+            answeredAt: new Date(),
+          },
+          {
+            order: 3,
+            questionId: 'q-3',
+            userAnswer: 'C',
+            isCorrect: false,
+            answeredAt: new Date(),
+          },
         ],
       });
       mockPrisma.examSession.findUnique.mockResolvedValue(sessionWithAnswers);
-      mockPrisma.$transaction.mockImplementation(async (fn: (tx: typeof mockPrisma) => Promise<unknown>) =>
-        fn(mockPrisma),
+      mockPrisma.$transaction.mockImplementation(
+        async (fn: (tx: typeof mockPrisma) => Promise<unknown>) =>
+          fn(mockPrisma),
       );
       mockPrisma.examSession.update.mockResolvedValue({});
       mockPrisma.quarantineItem.findFirst.mockResolvedValue(null);
@@ -213,14 +274,33 @@ describe('ExamsService', () => {
     it('yanlış soruları otomatik karantinaya almalı', async () => {
       const sessionWithWrong = makeSession({
         questions: [
-          { order: 1, questionId: 'q-1', userAnswer: 'B', isCorrect: false, answeredAt: new Date() },
-          { order: 2, questionId: 'q-2', userAnswer: null, isCorrect: null, answeredAt: null },
-          { order: 3, questionId: 'q-3', userAnswer: null, isCorrect: null, answeredAt: null },
+          {
+            order: 1,
+            questionId: 'q-1',
+            userAnswer: 'B',
+            isCorrect: false,
+            answeredAt: new Date(),
+          },
+          {
+            order: 2,
+            questionId: 'q-2',
+            userAnswer: null,
+            isCorrect: null,
+            answeredAt: null,
+          },
+          {
+            order: 3,
+            questionId: 'q-3',
+            userAnswer: null,
+            isCorrect: null,
+            answeredAt: null,
+          },
         ],
       });
       mockPrisma.examSession.findUnique.mockResolvedValue(sessionWithWrong);
-      mockPrisma.$transaction.mockImplementation(async (fn: (tx: typeof mockPrisma) => Promise<unknown>) =>
-        fn(mockPrisma),
+      mockPrisma.$transaction.mockImplementation(
+        async (fn: (tx: typeof mockPrisma) => Promise<unknown>) =>
+          fn(mockPrisma),
       );
       mockPrisma.examSession.update.mockResolvedValue({});
       mockPrisma.quarantineItem.findFirst.mockResolvedValue(null);
@@ -255,8 +335,9 @@ describe('ExamsService', () => {
       };
       mockPrisma.quarantineItem.findUnique.mockResolvedValue(itemWith2Correct);
       mockPrisma.question.findUnique.mockResolvedValue({ correctAnswer: 'A' });
-      mockPrisma.$transaction.mockImplementation(async (fn: (tx: typeof mockPrisma) => Promise<unknown>) =>
-        fn(mockPrisma),
+      mockPrisma.$transaction.mockImplementation(
+        async (fn: (tx: typeof mockPrisma) => Promise<unknown>) =>
+          fn(mockPrisma),
       );
       mockPrisma.quarantineAttempt.create.mockResolvedValue({});
       mockPrisma.quarantineItem.update.mockResolvedValue({});
@@ -278,8 +359,9 @@ describe('ExamsService', () => {
       };
       mockPrisma.quarantineItem.findUnique.mockResolvedValue(itemWith1Correct);
       mockPrisma.question.findUnique.mockResolvedValue({ correctAnswer: 'A' });
-      mockPrisma.$transaction.mockImplementation(async (fn: (tx: typeof mockPrisma) => Promise<unknown>) =>
-        fn(mockPrisma),
+      mockPrisma.$transaction.mockImplementation(
+        async (fn: (tx: typeof mockPrisma) => Promise<unknown>) =>
+          fn(mockPrisma),
       );
       mockPrisma.quarantineAttempt.create.mockResolvedValue({});
       mockPrisma.quarantineItem.update.mockResolvedValue({});

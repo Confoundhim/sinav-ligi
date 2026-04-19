@@ -44,7 +44,15 @@ export const appConfig = () => ({
     merchantKey: process.env.PAYTR_MERCHANT_KEY ?? '',
     merchantSalt: process.env.PAYTR_MERCHANT_SALT ?? '',
     testMode: Number(process.env.PAYTR_TEST_MODE ?? '1'),
-    successUrl: process.env.PAYTR_SUCCESS_URL ?? 'http://localhost:3001/payment/success',
+    successUrl:
+      process.env.PAYTR_SUCCESS_URL ?? 'http://localhost:3001/payment/success',
     failUrl: process.env.PAYTR_FAIL_URL ?? 'http://localhost:3001/payment/fail',
+  },
+  smtp: {
+    host: process.env.SMTP_HOST ?? '',
+    port: Number(process.env.SMTP_PORT ?? '587'),
+    user: process.env.SMTP_USER ?? '',
+    pass: process.env.SMTP_PASS ?? '',
+    from: process.env.SMTP_FROM ?? 'noreply@sinavligi.com',
   },
 });

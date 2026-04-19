@@ -45,7 +45,8 @@ export class BadgesController {
   @HttpCode(HttpStatus.OK)
   @Roles(UserRole.ADMIN)
   @ApiOperation({
-    summary: 'Rozet hak ediş kontrolü (internal — sınav/düello/karantina sonrası)',
+    summary:
+      'Rozet hak ediş kontrolü (internal — sınav/düello/karantina sonrası)',
   })
   checkBadge(@Body() dto: CheckBadgeDto) {
     return this.badgesService.checkBadges(dto.userId, dto.event, dto.metadata);

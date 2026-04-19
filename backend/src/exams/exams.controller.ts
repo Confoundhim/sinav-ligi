@@ -66,10 +66,7 @@ export class ExamsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Sınav sorularını getir (cevaplar gizli)' })
-  getExamQuestions(
-    @Param('id') id: string,
-    @CurrentUser() user: JwtPayload,
-  ) {
+  getExamQuestions(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.examsService.getExamQuestions(id, user.sub);
   }
 
@@ -88,19 +85,13 @@ export class ExamsController {
   @Post(':id/finish')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Sınavı bitir ve sonuçları hesapla' })
-  finishExam(
-    @Param('id') id: string,
-    @CurrentUser() user: JwtPayload,
-  ) {
+  finishExam(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.examsService.finishExam(id, user.sub);
   }
 
   @Get(':id/results')
   @ApiOperation({ summary: 'Sınav sonuçları (detaylı analiz)' })
-  getExamResults(
-    @Param('id') id: string,
-    @CurrentUser() user: JwtPayload,
-  ) {
+  getExamResults(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.examsService.getExamResults(id, user.sub);
   }
 }
@@ -121,10 +112,7 @@ export class QuarantineController {
 
   @Get(':id/next')
   @ApiOperation({ summary: 'Karantina kurtarma için sonraki soru' })
-  getNextQuestion(
-    @Param('id') id: string,
-    @CurrentUser() user: JwtPayload,
-  ) {
+  getNextQuestion(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.examsService.getNextQuarantineQuestion(id, user.sub);
   }
 
@@ -151,7 +139,9 @@ export class AdminQuarantineController {
 
   @Post('apply-weekly-penalty')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Haftalık karantina penaltısını uygula (7+ gün aktif → EXPIRED)' })
+  @ApiOperation({
+    summary: 'Haftalık karantina penaltısını uygula (7+ gün aktif → EXPIRED)',
+  })
   applyWeeklyPenalty() {
     return this.examsService.applyWeeklyPenalty();
   }

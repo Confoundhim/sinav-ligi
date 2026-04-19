@@ -1,4 +1,11 @@
-import { IsBoolean, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 
@@ -8,7 +15,11 @@ export class QuestionFilterDto {
   @IsString()
   questionTypeId?: string;
 
-  @ApiPropertyOptional({ description: 'Zorluk derecesi', minimum: 1, maximum: 5 })
+  @ApiPropertyOptional({
+    description: 'Zorluk derecesi',
+    minimum: 1,
+    maximum: 5,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
