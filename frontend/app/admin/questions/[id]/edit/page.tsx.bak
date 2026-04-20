@@ -8,6 +8,13 @@ import { getAdminQuestion } from "@/lib/api/admin";
 import type { Question } from "@/lib/api/types";
 import { QuestionForm } from "@/components/admin/question-form";
 
+// Static export için gerekli
+export async function generateStaticParams() {
+  // Admin sayfaları build zamanında bilinmediği için boş array dönüyoruz
+  // Bu sayfa client-side çalışacak
+  return [];
+}
+
 type Props = {
   params: Promise<{ id: string }>;
 };
