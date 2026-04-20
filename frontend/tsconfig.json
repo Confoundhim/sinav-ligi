@@ -35,7 +35,7 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "next.config.js", "app/admin/questions/[id]/edit/page.tsx.bak"  ],
+, "next.config.js", "app/admin/questions/[id]/edit/page.tsx"  ],
   "exclude": [
     "node_modules"
   ]
